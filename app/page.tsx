@@ -5,6 +5,7 @@ import { useState, type CSSProperties } from 'react';
 type Mode = 'solo' | 'pair';
 type Cycle = 'period' | 'regular';
 type CardKind = 'sense' | 'explore';
+type Design = 'moss' | 'clay' | 'mist' | 'plum';
 
 type PromptCard = {
   id: string;
@@ -124,6 +125,48 @@ const intensityStops = [
   { range: '9–10', label: '深入探索' },
 ];
 
+const designs: Array<{
+  id: Design;
+  number: string;
+  label: string;
+  note: string;
+  accentStart: string;
+  accentEnd: string;
+}> = [
+  {
+    id: 'moss',
+    number: '01',
+    label: '苔夜',
+    note: '沉静 · 包裹',
+    accentStart: '#718b7c',
+    accentEnd: '#a57e88',
+  },
+  {
+    id: 'clay',
+    number: '02',
+    label: '陶白',
+    note: '温润 · 编辑感',
+    accentStart: '#91896d',
+    accentEnd: '#aa7f77',
+  },
+  {
+    id: 'mist',
+    number: '03',
+    label: '雾蓝',
+    note: '清透 · 留白',
+    accentStart: '#6f8992',
+    accentEnd: '#898198',
+  },
+  {
+    id: 'plum',
+    number: '04',
+    label: '藕灰',
+    note: '亲密 · 杂志感',
+    accentStart: '#847884',
+    accentEnd: '#9d7c7c',
+  },
+];
+
 function getIntensityMeta(value: number) {
   if (value <= 2) return { tier: 0 as const, label: '边缘安抚', note: '轻柔靠近，不要求说得太多。' };
   if (value <= 5) return { tier: 1 as const, label: '温和感知', note: '允许感受出现，也保留足够空间。' };
@@ -150,6 +193,7 @@ function pickKind(refinements: number): CardKind {
 
 export default function Home() {
   const [screen, setScreen] = useState<'setup' | 'deck'>('setup');
+  const [design, setDesign] = useState<Design>('moss');
   const [mode, setMode] = useState<Mode | null>(null);
   const [cycle, setCycle] = useState<Cycle | null>(null);
   const [intensity, setIntensity] = useState(4);
@@ -159,7 +203,8 @@ export default function Home() {
   const [senseRefinements, setSenseRefinements] = useState(0);
 
   const intensityMeta = getIntensityMeta(intensity);
-  const accent = mixHex('#6f9e89', '#c47a92', intensity / 10);
+  const activeDesign = designs.find((item) => item.id === design) ?? designs[0];
+  const accent = mixHex(activeDesign.accentStart, activeDesign.accentEnd, intensity / 10);
   const sessionStyle = {
     '--accent': accent,
     '--intensity-position': `${intensity * 10}%`,
@@ -225,7 +270,7 @@ export default function Home() {
         : '单人 · 非经期';
 
     return (
-      <main className="app-shell deck-screen" style={sessionStyle}>
+      <main className="app-shell deck-screen" data-design={design} style={sessionStyle}>
         <header className="topbar">
           <button className="quiet-button" type="button" onClick={() => setScreen('setup')}>
             <span aria-hidden="true">←</span> 重新设置
@@ -300,7 +345,7 @@ export default function Home() {
         : '请选择游戏模式';
 
   return (
-    <main className="app-shell setup-screen" style={sessionStyle}>
+    <main className="app-shell setup-screen" data-design={design} style={sessionStyle}>
       <header className="topbar">
         <div className="brand">
           <span className="brand-dot" aria-hidden="true" />
@@ -310,11 +355,34 @@ export default function Home() {
         <span className="step-label">01 / SETUP</span>
       </header>
 
+      <nav className="concept-picker" aria-label="选择首页界面方案">
+        <div className="concept-picker-title">
+          <span>界面方案</span>
+          <small>{activeDesign.note}</small>
+        </div>
+        <div className="concept-options">
+          {designs.map((item) => (
+            <button
+              className={design === item.id ? 'is-selected' : ''}
+              type="button"
+              key={item.id}
+              aria-pressed={design === item.id}
+              onClick={() => setDesign(item.id)}
+            >
+              <span className={`concept-swatch swatch-${item.id}`} aria-hidden="true" />
+              <span className="concept-number">{item.number}</span>
+              <strong>{item.label}</strong>
+            </button>
+          ))}
+        </div>
+      </nav>
+
       <section className="setup-layout">
         <div className="setup-intro">
           <span className="eyebrow">进入之前</span>
           <h1>先决定，<br />这次要走多远。</h1>
           <p>没有正确的选择。强度只是为这一次对话划出一个让人安心的范围。</p>
+          <span className="concept-caption">{activeDesign.number} / {activeDesign.label} · {activeDesign.note}</span>
           <div className="ambient-mark" aria-hidden="true">
             <span className="ambient-ring ring-one" />
             <span className="ambient-ring ring-two" />
@@ -322,7 +390,7 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="settings-panel">
+        <div className={`settings-panel ${mode === 'solo' ? 'has-cycle' : ''}`}>
           <fieldset className="setting-group">
             <legend>
               <span className="setting-index">01</span>
