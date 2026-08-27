@@ -2,8 +2,8 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'ARCANA — 卡牌选择',
-  description: '一个轻量、专注的卡牌选择与使用原型。',
+  title: 'ARCANA — 感知与探索',
+  description: '在安全的强度里，用卡牌靠近感受、关系与真实需要。',
 };
 
 export default function RootLayout({
