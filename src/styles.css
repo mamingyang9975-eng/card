@@ -1284,6 +1284,10 @@ button:focus-visible {
   color: var(--card-ink);
 }
 
+.deck-card-prompt {
+  display: none;
+}
+
 .deck-actions {
   position: absolute;
   top: 50%;
@@ -1957,7 +1961,7 @@ button:focus-visible {
     display: grid;
     flex: none;
     grid-template-columns: minmax(0, 1fr);
-    gap: 38px;
+    gap: 20px;
     padding: 30px 0 24px;
   }
 
@@ -1978,6 +1982,28 @@ button:focus-visible {
   .deck-reading-inner {
     padding: 20px;
     border-radius: 17px;
+  }
+
+  .deck-reading-card .card-art,
+  .deck-reading-card .active-card-copy,
+  .deck-layout-focused .deck-reading-card .card-art,
+  .deck-layout-focused .deck-reading-card .active-card-copy {
+    display: none;
+  }
+
+  .deck-card-prompt {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    padding: clamp(18px, 5svh, 34px) 2px;
+    font-family: Georgia, "Songti SC", serif;
+    font-size: clamp(21px, 6.4vw, 28px);
+    font-weight: 400;
+    letter-spacing: -0.025em;
+    line-height: 1.65;
+    text-align: left;
   }
 
   .deck-reading-card .card-art {
@@ -2004,6 +2030,10 @@ button:focus-visible {
     justify-self: center;
     text-align: center;
     transform: none;
+  }
+
+  .deck-guidance {
+    display: none;
   }
 
   .deck-layout-focused .deck-actions {
@@ -2042,12 +2072,12 @@ button:focus-visible {
   }
 
   .deck-exchange-button {
-    margin-top: 24px;
+    margin-top: 0;
   }
 
   .deck-progress {
     justify-content: center;
-    margin-top: 38px;
+    margin-top: 24px;
   }
 
   .deck-forward-actions {

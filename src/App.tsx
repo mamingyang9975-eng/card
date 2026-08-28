@@ -606,6 +606,7 @@ function Deck({ card, onReturn }: { card: Card; onReturn: () => void }) {
                 <span>{activeCard.subtitle}</span>
               </div>
               <CardArtwork card={activeCard} />
+              <h2 className="deck-card-prompt">{activeCard.description}</h2>
               <div className="active-card-copy">
                 <h1>{activeCard.name}</h1>
               </div>
