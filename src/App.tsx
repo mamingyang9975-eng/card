@@ -34,6 +34,15 @@ type CardSpreadTransform = {
 };
 
 type SpreadPhase = 'idle' | 'measuring' | 'ready' | 'spreading';
+type HoldPhase = 'idle' | 'holding' | 'gathering';
+type LandingExitPhase = 'idle' | 'fading' | 'lifting' | 'moving';
+type DeckLayoutPhase = 'showcase' | 'focused';
+
+type LandingExitTransform = {
+  x: number;
+  y: number;
+  scale: number;
+};
 
 const cards: Card[] = [
   {
@@ -87,6 +96,90 @@ const cards: Card[] = [
     ink: '#214c79',
   },
 ];
+
+const beginningDeck: Card[] = [
+  {
+    id: 'begin-self-gaze',
+    index: '01',
+    name: '观看自己',
+    subtitle: 'SELF GAZE',
+    description:
+      '现在脱掉一件衣物———如果你已经一丝不挂，深深地呼吸，拥抱自己，感受空气的温度和你肌肤的触感。',
+    accent: '#f0b84b',
+    soft: '#fff3d8',
+    ink: '#5f4000',
+  },
+  {
+    id: 'begin-arousal',
+    index: '02',
+    name: '回想兴奋',
+    subtitle: 'AROUSAL',
+    description: '最近最令你性兴奋的时刻是什么？这个时刻里的什么在吸引你？',
+    accent: '#f0b84b',
+    soft: '#fff3d8',
+    ink: '#5f4000',
+  },
+  {
+    id: 'begin-touch',
+    index: '03',
+    name: '指尖感知',
+    subtitle: 'TOUCH',
+    description: '用手指轻轻地在内裤上打圈，感受身体作出的反应。此时，你是否有想到某个画面？',
+    accent: '#f0b84b',
+    soft: '#fff3d8',
+    ink: '#5f4000',
+  },
+  {
+    id: 'begin-breathe',
+    index: '04',
+    name: '深呼吸',
+    subtitle: 'BREATHE',
+    description: '深深地呼吸三次，让空气自由地流入你的身体，慢慢把自己的感知调动起来。',
+    accent: '#f0b84b',
+    soft: '#fff3d8',
+    ink: '#5f4000',
+  },
+  {
+    id: 'begin-inner-voice',
+    index: '05',
+    name: '内在声音',
+    subtitle: 'INNER VOICE',
+    description:
+      '闭上眼睛，想象有哪一个声音？或者哪一句话可以点燃你的此刻？只用在心里轻轻地告诉自己。',
+    accent: '#f0b84b',
+    soft: '#fff3d8',
+    ink: '#5f4000',
+  },
+];
+
+function createPlaceholderDeck(deck: Card): Card[] {
+  return Array.from({ length: 5 }, (_, cardIndex) => {
+    const number = String(cardIndex + 1).padStart(2, '0');
+
+    return {
+      id: `${deck.id}-placeholder-${number}`,
+      index: number,
+      name: `占位卡牌 ${number}`,
+      subtitle: `${deck.subtitle.replace('THE ', '')} · CARD ${number}`,
+      description: `${deck.name}卡组的第 ${cardIndex + 1} 张占位卡牌，内容将在后续补充。`,
+      accent: deck.accent,
+      soft: deck.soft,
+      ink: deck.ink,
+    };
+  });
+}
+
+const deckCardsById: Record<string, Card[]> = {
+  begin: beginningDeck,
+  insight: createPlaceholderDeck(cards[1]),
+  courage: createPlaceholderDeck(cards[2]),
+  balance: createPlaceholderDeck(cards[3]),
+  'new-moon': createPlaceholderDeck(cards[4]),
+};
+
+function getDeckCards(card: Card) {
+  return deckCardsById[card.id] ?? createPlaceholderDeck(card);
+}
 
 const particles = Array.from({ length: 84 }, (_, index) => {
   const angle = (index * 137.508 * Math.PI) / 180;
@@ -162,9 +255,19 @@ function LandingDeck({
   onContinue: () => void;
   onExpand: (origin: DeckOrigin) => void;
 }) {
-  const [isPressing, setIsPressing] = useState(false);
+  const [holdPhase, setHoldPhase] = useState<HoldPhase>('idle');
+  const [exitPhase, setExitPhase] = useState<LandingExitPhase>('idle');
+  const [exitTransform, setExitTransform] = useState<LandingExitTransform>({
+    x: 0,
+    y: 0,
+    scale: 1,
+  });
   const stackRef = useRef<HTMLDivElement | null>(null);
+  const frontCardRef = useRef<HTMLElement | null>(null);
+  const useTargetRef = useRef<HTMLDivElement | null>(null);
   const pressTimer = useRef<number | null>(null);
+  const gatherTimer = useRef<number | null>(null);
+  const exitTimers = useRef<number[]>([]);
   const longPressTriggered = useRef(false);
 
   function clearPressTimer() {
@@ -174,30 +277,89 @@ function LandingDeck({
     }
   }
 
-  useEffect(() => clearPressTimer, []);
+  function clearGatherTimer() {
+    if (gatherTimer.current !== null) {
+      window.clearTimeout(gatherTimer.current);
+      gatherTimer.current = null;
+    }
+  }
+
+  function clearExitTimers() {
+    exitTimers.current.forEach((timer) => window.clearTimeout(timer));
+    exitTimers.current = [];
+  }
+
+  function queueExitStep(callback: () => void, delay: number) {
+    const timer = window.setTimeout(callback, delay);
+    exitTimers.current.push(timer);
+  }
+
+  useEffect(() => {
+    return () => {
+      clearPressTimer();
+      clearGatherTimer();
+      clearExitTimers();
+    };
+  }, []);
 
   function startPress(event: ReactPointerEvent<HTMLButtonElement>) {
+    if (exitPhase !== 'idle') return;
     if (event.pointerType === 'mouse' && event.button !== 0) return;
 
     clearPressTimer();
+    clearGatherTimer();
     longPressTriggered.current = false;
-    setIsPressing(true);
+    setHoldPhase('holding');
     pressTimer.current = window.setTimeout(() => {
       pressTimer.current = null;
       longPressTriggered.current = true;
-      setIsPressing(false);
       const stackBounds = stackRef.current?.getBoundingClientRect();
-      onExpand({
+      const origin = {
         top: stackBounds?.top ?? window.innerHeight / 2,
         left: stackBounds?.left ?? window.innerWidth / 2,
         width: stackBounds?.width ?? 280,
-      });
+      };
+      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      setHoldPhase('gathering');
+      gatherTimer.current = window.setTimeout(() => {
+        gatherTimer.current = null;
+        onExpand(origin);
+      }, reduceMotion ? 30 : 220);
     }, 620);
   }
 
   function endPress() {
+    if (longPressTriggered.current) return;
     clearPressTimer();
-    setIsPressing(false);
+    setHoldPhase('idle');
+  }
+
+  function beginContinueTransition() {
+    if (exitPhase !== 'idle') return;
+
+    clearPressTimer();
+    clearGatherTimer();
+
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const sourceBounds = frontCardRef.current?.getBoundingClientRect();
+    const targetBounds = useTargetRef.current?.getBoundingClientRect();
+
+    if (reduceMotion || !sourceBounds || !targetBounds) {
+      onContinue();
+      return;
+    }
+
+    setExitTransform({
+      x: targetBounds.left + targetBounds.width / 2 - (sourceBounds.left + sourceBounds.width / 2),
+      y: targetBounds.top + targetBounds.height / 2 - (sourceBounds.top + sourceBounds.height / 2),
+      scale: targetBounds.width / sourceBounds.width,
+    });
+    setExitPhase('fading');
+
+    queueExitStep(() => setExitPhase('lifting'), 260);
+    queueExitStep(() => setExitPhase('moving'), 500);
+    queueExitStep(onContinue, 1340);
   }
 
   function continueJourney() {
@@ -205,11 +367,14 @@ function LandingDeck({
       longPressTriggered.current = false;
       return;
     }
-    onContinue();
+    beginContinueTransition();
   }
 
   return (
-    <main className="landing-page" style={cardStyle(card)}>
+    <main
+      className={`landing-page ${exitPhase !== 'idle' ? 'is-exiting' : ''} exit-${exitPhase}`}
+      style={cardStyle(card)}
+    >
       <header className="topbar landing-topbar">
         <div className="brand">
           <span className="brand-dot" aria-hidden="true" />
@@ -222,7 +387,12 @@ function LandingDeck({
       <section className="landing-stage" aria-label="从启程牌开始今天的旅程">
         <div
           ref={stackRef}
-          className={`landing-card-stack ${isPressing ? 'is-pressing' : ''}`}
+          className={`landing-card-stack is-${holdPhase} is-exit-${exitPhase}`}
+          style={{
+            '--landing-exit-x': `${exitTransform.x}px`,
+            '--landing-exit-y': `${exitTransform.y}px`,
+            '--landing-exit-scale': exitTransform.scale,
+          } as CSSProperties}
         >
           {cards.slice(1).map((stackCard, index) => (
             <span
@@ -239,7 +409,12 @@ function LandingDeck({
             </span>
           ))}
 
-          <article className="active-card landing-front-card" style={cardStyle(card)} aria-hidden="true">
+          <article
+            ref={frontCardRef}
+            className="active-card landing-front-card"
+            style={cardStyle(card)}
+            aria-hidden="true"
+          >
             <div className="active-card-inner landing-front-inner">
               <div className="card-kicker">
                 <span>{card.index}</span>
@@ -263,13 +438,34 @@ function LandingDeck({
             onPointerCancel={endPress}
             onPointerLeave={endPress}
             onContextMenu={(event) => event.preventDefault()}
+            disabled={exitPhase !== 'idle'}
           />
         </div>
 
-        <button className="landing-hint" type="button" onClick={onContinue}>
+        <button
+          className="landing-hint"
+          type="button"
+          onClick={beginContinueTransition}
+          disabled={exitPhase !== 'idle'}
+        >
           点击继续
         </button>
       </section>
+
+      <div className="use-page landing-use-target" aria-hidden="true">
+        <div className="topbar use-topbar" />
+        <div className="use-stage">
+          <div ref={useTargetRef} className="active-card" />
+          <div className="use-copy">
+            <span className="eyebrow">当前卡牌</span>
+            <h2>准备使用「{card.name}」</h2>
+            <p>确认后，这张卡牌将带你进入对应的五张卡牌卡组。</p>
+            <button className="primary-button use-button" type="button" tabIndex={-1}>
+              使用这张卡牌 <span aria-hidden="true">↗</span>
+            </button>
+          </div>
+        </div>
+      </div>
     </main>
   );
 }
@@ -318,11 +514,28 @@ function Journey({ card, onComplete }: { card: Card; onComplete: () => void }) {
 }
 
 function Deck({ card, onReturn }: { card: Card; onReturn: () => void }) {
-  const initialIndex = Math.max(cards.findIndex((item) => item.id === card.id), 0);
-  const [activeIndex, setActiveIndex] = useState(initialIndex);
+  const initialGroupIndex = Math.max(cards.findIndex((item) => item.id === card.id), 0);
+  const [groupIndex, setGroupIndex] = useState(initialGroupIndex);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [stepIndex, setStepIndex] = useState(0);
   const [cardMotion, setCardMotion] = useState(0);
   const [actionNote, setActionNote] = useState('');
-  const activeCard = cards[activeIndex];
+  const [layoutPhase, setLayoutPhase] = useState<DeckLayoutPhase>('showcase');
+  const activeGroup = cards[groupIndex];
+  const deckCards = getDeckCards(activeGroup);
+  const activeCard = deckCards[activeIndex];
+
+  useEffect(() => {
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    setLayoutPhase('showcase');
+
+    const focusTimer = window.setTimeout(
+      () => setLayoutPhase('focused'),
+      reduceMotion ? 30 : 1100,
+    );
+
+    return () => window.clearTimeout(focusTimer);
+  }, [activeCard.id, cardMotion]);
 
   function showCard(nextIndex: number, note: string) {
     setActiveIndex(nextIndex);
@@ -331,20 +544,41 @@ function Deck({ card, onReturn }: { card: Card; onReturn: () => void }) {
   }
 
   function exchangeCard() {
-    const nextIndex = (activeIndex + 2 + (cardMotion % 2)) % cards.length;
+    if (deckCards.length < 2) {
+      setActionNote('当前卡组暂时只有这一张牌');
+      return;
+    }
+
+    const offset = 1 + (cardMotion % (deckCards.length - 1));
+    const nextIndex = (activeIndex + offset) % deckCards.length;
     showCard(nextIndex, '已为你换上一张不同的牌');
   }
 
   function skipCard() {
-    showCard((activeIndex + 1) % cards.length, '已跳过，旅程继续');
+    showCard((activeIndex + 1) % deckCards.length, '已跳过，旅程继续');
   }
 
   function nextCard() {
-    showCard((activeIndex + 1) % cards.length, '已进入下一张牌');
+    if (stepIndex < deckCards.length - 1) {
+      setStepIndex((value) => value + 1);
+      showCard((activeIndex + 1) % deckCards.length, '已进入下一张牌');
+      return;
+    }
+
+    if (groupIndex < cards.length - 1) {
+      setGroupIndex((value) => value + 1);
+      setActiveIndex(0);
+      setStepIndex(0);
+      setCardMotion((value) => value + 1);
+      setActionNote('当前卡组已完成，已进入下一组');
+      return;
+    }
+
+    setActionNote('今天的所有卡组都已完成');
   }
 
   return (
-    <main className="deck-page" style={cardStyle(card)}>
+    <main className={`deck-page deck-layout-${layoutPhase}`} style={cardStyle(activeGroup)}>
       <div className="deck-atmosphere" aria-hidden="true">
         <span className="deck-ambient-glow" />
         {deckMotes.map((mote) => (
@@ -358,29 +592,31 @@ function Deck({ card, onReturn }: { card: Card; onReturn: () => void }) {
           <span>ARCANA</span>
         </div>
         <span className="brand-mark">今日旅程</span>
-        <span className="step-label">{String(activeIndex + 1).padStart(2, '0')} / 05</span>
+        <span className="step-label">
+          {String(stepIndex + 1).padStart(2, '0')} / {String(deckCards.length).padStart(2, '0')}
+        </span>
       </header>
 
-      <section className="deck-stage" aria-label={`${card.name}卡组，当前卡牌为${activeCard.name}`}>
-        <article className="deck-reading-card" key={cardMotion} style={deckCardStyle(activeCard, card)}>
-          <div className="deck-reading-inner">
-            <div className="card-kicker">
-              <span>{activeCard.index}</span>
-              <span>{activeCard.subtitle}</span>
+      <section className="deck-stage" aria-label={`${activeGroup.name}卡组，当前卡牌为${activeCard.name}`}>
+        <div className="deck-card-slot">
+          <article className="deck-reading-card" key={cardMotion} style={deckCardStyle(activeCard, activeGroup)}>
+            <div className="deck-reading-inner">
+              <div className="card-kicker">
+                <span>{activeCard.index}</span>
+                <span>{activeCard.subtitle}</span>
+              </div>
+              <CardArtwork card={activeCard} />
+              <div className="active-card-copy">
+                <h1>{activeCard.name}</h1>
+              </div>
             </div>
-            <CardArtwork card={activeCard} />
-            <div className="active-card-copy">
-              <h1>{activeCard.name}</h1>
-              <p>{activeCard.description}</p>
-            </div>
-          </div>
-        </article>
+          </article>
+        </div>
 
         <aside className="deck-actions">
           <div className="deck-guidance">
-            <span className="eyebrow">{card.name} · CARD DECK</span>
-            <h2>和这张牌<br />停留一会儿</h2>
-            <p>读完此刻的提示后，再决定要继续、跳过，还是换一张牌。</p>
+            <span className="eyebrow">{activeGroup.name} · CARD DECK</span>
+            <h2 className="deck-prompt">{activeCard.description}</h2>
           </div>
 
           <button className="deck-exchange-button" type="button" onClick={exchangeCard}>
@@ -388,8 +624,8 @@ function Deck({ card, onReturn }: { card: Card; onReturn: () => void }) {
           </button>
 
           <div className="deck-progress" aria-hidden="true">
-            {cards.map((item, index) => (
-              <span key={item.id} className={index === activeIndex ? 'is-current' : ''} />
+            {deckCards.map((item, index) => (
+              <span key={item.id} className={index === stepIndex ? 'is-current' : ''} />
             ))}
           </div>
 
@@ -415,14 +651,19 @@ function Deck({ card, onReturn }: { card: Card; onReturn: () => void }) {
 
 export default function App() {
   const [selectedId, setSelectedId] = useState(cards[0].id);
-  const [showRecommendationTip, setShowRecommendationTip] = useState(false);
+  const [recommendationTipKey, setRecommendationTipKey] = useState(0);
+  const [descriptionMessageCardId, setDescriptionMessageCardId] = useState<string | null>(null);
+  const [descriptionMessageKey, setDescriptionMessageKey] = useState(0);
   const [journeyEndMessageKey, setJourneyEndMessageKey] = useState(0);
   const [screen, setScreen] = useState<Screen>('landing');
   const [used, setUsed] = useState(false);
+  const [arrivingFromLanding, setArrivingFromLanding] = useState(false);
   const [expansionOrigin, setExpansionOrigin] = useState<DeckOrigin | null>(null);
   const [spreadPhase, setSpreadPhase] = useState<SpreadPhase>('idle');
   const [spreadTransforms, setSpreadTransforms] = useState<CardSpreadTransform[]>([]);
   const activationTimer = useRef<number | null>(null);
+  const recommendationTipTimer = useRef<number | null>(null);
+  const descriptionMessageTimer = useRef<number | null>(null);
   const journeyEndTimer = useRef<number | null>(null);
   const choiceCardRefs = useRef<Array<HTMLButtonElement | null>>([]);
 
@@ -432,6 +673,12 @@ export default function App() {
     return () => {
       if (activationTimer.current !== null) {
         window.clearTimeout(activationTimer.current);
+      }
+      if (recommendationTipTimer.current !== null) {
+        window.clearTimeout(recommendationTipTimer.current);
+      }
+      if (descriptionMessageTimer.current !== null) {
+        window.clearTimeout(descriptionMessageTimer.current);
       }
       if (journeyEndTimer.current !== null) {
         window.clearTimeout(journeyEndTimer.current);
@@ -451,14 +698,14 @@ export default function App() {
       const target = element.getBoundingClientRect();
       const selectedLift = cards[index].id === selectedId ? (compactLayout ? -4 : -7) : 0;
       const stackDepth = index;
-      const stackStepX = compactLayout ? 6 : 9;
-      const stackStepY = compactLayout ? 7 : 9;
+      const stackStepX = compactLayout ? 1.5 : 2;
+      const stackStepY = compactLayout ? 1.5 : 2;
 
       return {
         x: expansionOrigin.left + stackDepth * stackStepX - target.left,
         y: expansionOrigin.top - stackDepth * stackStepY - (target.top - selectedLift),
         scale: expansionOrigin.width / target.width,
-        rotation: stackDepth === 0 ? 0 : stackDepth * (compactLayout ? 0.4 : 0.42),
+        rotation: stackDepth === 0 ? 0 : stackDepth * 0.08,
       };
     });
 
@@ -485,14 +732,41 @@ export default function App() {
 
   function openCard() {
     setUsed(false);
+    setArrivingFromLanding(false);
     setScreen('use');
   }
 
+  function hideRecommendationTip() {
+    if (recommendationTipTimer.current !== null) {
+      window.clearTimeout(recommendationTipTimer.current);
+      recommendationTipTimer.current = null;
+    }
+    setRecommendationTipKey(0);
+  }
+
+  function showRecommendationTip() {
+    if (recommendationTipTimer.current !== null) {
+      window.clearTimeout(recommendationTipTimer.current);
+    }
+
+    setRecommendationTipKey((value) => value + 1);
+    recommendationTipTimer.current = window.setTimeout(() => {
+      recommendationTipTimer.current = null;
+      setRecommendationTipKey(0);
+    }, 3720);
+  }
+
   function showJourneyEndMessage() {
+    if (descriptionMessageTimer.current !== null) {
+      window.clearTimeout(descriptionMessageTimer.current);
+      descriptionMessageTimer.current = null;
+    }
     if (journeyEndTimer.current !== null) {
       window.clearTimeout(journeyEndTimer.current);
     }
 
+    setDescriptionMessageCardId(null);
+    setDescriptionMessageKey(0);
     setJourneyEndMessageKey((value) => value + 1);
     journeyEndTimer.current = window.setTimeout(() => {
       journeyEndTimer.current = null;
@@ -500,9 +774,30 @@ export default function App() {
     }, 3000);
   }
 
+  function showCardDescription(card: Card) {
+    if (journeyEndTimer.current !== null) {
+      window.clearTimeout(journeyEndTimer.current);
+      journeyEndTimer.current = null;
+    }
+    if (descriptionMessageTimer.current !== null) {
+      window.clearTimeout(descriptionMessageTimer.current);
+    }
+
+    setJourneyEndMessageKey(0);
+    setDescriptionMessageCardId(card.id);
+    setDescriptionMessageKey((value) => value + 1);
+    descriptionMessageTimer.current = window.setTimeout(() => {
+      descriptionMessageTimer.current = null;
+      setDescriptionMessageCardId(null);
+      setDescriptionMessageKey(0);
+    }, 3000);
+  }
+
   function startFromBeginning() {
     setSelectedId(cards[0].id);
-    openCard();
+    setUsed(false);
+    setArrivingFromLanding(true);
+    setScreen('use');
   }
 
   function expandDeck(origin: DeckOrigin) {
@@ -541,7 +836,10 @@ export default function App() {
 
   if (screen === 'use') {
     return (
-      <main className="use-page" style={cardStyle(selectedCard)}>
+      <main
+        className={`use-page ${arrivingFromLanding ? 'is-landing-arrival' : ''}`}
+        style={cardStyle(selectedCard)}
+      >
         <header className="topbar use-topbar">
           <button className="text-button" type="button" onClick={returnToCards}>
             <span aria-hidden="true">←</span> 返回选择
@@ -612,7 +910,10 @@ export default function App() {
       </header>
 
       <section className="selection-intro">
-        <span className="eyebrow">你可以从任意一个节点进入旅程</span>
+        <div className="selection-copy">
+          <span className="selection-note">整个旅程从左至右依次推进，强度也会逐步提升</span>
+          <span className="eyebrow">你可以从任意一个节点进入旅程</span>
+        </div>
         <h1>此刻，你需要什么？</h1>
       </section>
 
@@ -620,6 +921,8 @@ export default function App() {
         {cards.map((card, index) => {
           const selected = card.id === selectedId;
           const spreadTransform = spreadTransforms[index];
+          const isShowingDescription =
+            card.id === descriptionMessageCardId && descriptionMessageKey > 0;
 
           return (
             <button
@@ -644,8 +947,10 @@ export default function App() {
               type="button"
               aria-pressed={selected}
               aria-describedby={
-                card.id === 'begin' && selected && showRecommendationTip
-                  ? 'begin-recommendation-tip'
+                isShowingDescription
+                  ? `card-description-message-${card.id}`
+                  : card.id === 'begin' && selected && recommendationTipKey > 0
+                    ? 'begin-recommendation-tip'
                   : card.id === 'new-moon' && journeyEndMessageKey > 0
                     ? 'journey-end-message'
                   : undefined
@@ -655,12 +960,17 @@ export default function App() {
               onClick={() => {
                 if (expansionOrigin) return;
                 if (card.id === 'new-moon') {
-                  setShowRecommendationTip(false);
+                  hideRecommendationTip();
                   showJourneyEndMessage();
                   return;
                 }
                 setSelectedId(card.id);
-                setShowRecommendationTip(card.id === 'begin');
+                if (card.id === 'begin') {
+                  showRecommendationTip();
+                } else {
+                  hideRecommendationTip();
+                }
+                showCardDescription(card);
               }}
               onDoubleClick={() => {
                 if (!expansionOrigin && card.id !== 'new-moon') openCard();
@@ -669,13 +979,24 @@ export default function App() {
               {card.id === 'begin' && (
                 <span className="recommendation-badge">推荐</span>
               )}
-              {card.id === 'begin' && selected && showRecommendationTip && (
+              {card.id === 'begin' && selected && recommendationTipKey > 0 && (
                 <span
+                  key={`recommendation-tip-${recommendationTipKey}`}
                   id="begin-recommendation-tip"
                   className="recommendation-tip"
                   role="status"
                 >
                   最深度的体验
+                </span>
+              )}
+              {isShowingDescription && (
+                <span
+                  key={descriptionMessageKey}
+                  id={`card-description-message-${card.id}`}
+                  className="card-description-message"
+                  role="status"
+                >
+                  {card.description}
                 </span>
               )}
               {card.id === 'new-moon' && journeyEndMessageKey > 0 && (

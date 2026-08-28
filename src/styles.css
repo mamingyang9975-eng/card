@@ -103,7 +103,12 @@ button:focus-visible {
     calc(var(--stack-depth) * -9px)
   ) rotate(calc(var(--stack-depth) * 0.42deg));
   transform-origin: 50% 92%;
-  transition: transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
+  backface-visibility: hidden;
+  transition:
+    transform 320ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 260ms ease,
+    filter 320ms ease;
+  will-change: transform, opacity, filter;
 }
 
 .landing-stack-card::before {
@@ -134,7 +139,12 @@ button:focus-visible {
     0 32px 80px rgba(23, 24, 21, 0.16),
     0 0 70px color-mix(in srgb, var(--card-accent) 18%, transparent);
   transform-origin: center bottom;
-  transition: transform 260ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 260ms ease;
+  backface-visibility: hidden;
+  transition:
+    transform 260ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 260ms ease,
+    background-color 260ms ease;
+  will-change: transform, box-shadow;
 }
 
 .landing-card-stack .landing-front-card::after {
@@ -154,15 +164,35 @@ button:focus-visible {
   transform: translateY(-4px);
 }
 
-.landing-card-stack.is-pressing .landing-front-card {
-  transform: translateY(2px) scale(0.985);
+.landing-card-stack.is-holding .landing-front-card {
+  transform: translateY(1px) scale(0.992);
 }
 
-.landing-card-stack.is-pressing .landing-stack-card {
+.landing-card-stack.is-holding .landing-stack-card {
   transform: translate(
-    calc(var(--stack-depth) * 12px),
-    calc(var(--stack-depth) * -11px)
-  ) rotate(calc(var(--stack-depth) * 0.7deg));
+    calc(var(--stack-depth) * 7px),
+    calc(var(--stack-depth) * -7px)
+  ) rotate(calc(var(--stack-depth) * 0.28deg));
+  transition-duration: 560ms;
+  transition-timing-function: cubic-bezier(0.25, 0.7, 0.2, 1);
+}
+
+.landing-card-stack.is-gathering .landing-front-card {
+  box-shadow:
+    0 24px 58px rgba(23, 24, 21, 0.13),
+    0 0 54px color-mix(in srgb, var(--card-accent) 13%, transparent);
+  transform: translateY(2px) scale(0.978);
+  transition-duration: 220ms;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.landing-card-stack.is-gathering .landing-stack-card {
+  transform: translate(
+    calc(var(--stack-depth) * 2px),
+    calc(var(--stack-depth) * -2px)
+  ) rotate(calc(var(--stack-depth) * 0.08deg));
+  transition-duration: 220ms;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .landing-stack-button {
@@ -193,6 +223,83 @@ button:focus-visible {
 
 .landing-hint:hover {
   color: #65675f;
+}
+
+.landing-use-target {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: -10;
+  width: 100vw;
+  height: 100svh;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.landing-card-stack.is-exit-fading,
+.landing-card-stack.is-exit-lifting,
+.landing-card-stack.is-exit-moving {
+  animation: none;
+}
+
+.landing-card-stack.is-exit-fading .landing-stack-card,
+.landing-card-stack.is-exit-lifting .landing-stack-card,
+.landing-card-stack.is-exit-moving .landing-stack-card {
+  opacity: 0;
+  filter: blur(4px);
+  transform: translate(
+    calc(var(--stack-depth) * 5px),
+    calc(var(--stack-depth) * -12px - 16px)
+  ) scale(0.91);
+  transition-duration: 360ms, 260ms, 300ms;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1), ease, ease;
+}
+
+.landing-card-stack.is-exit-fading .landing-front-card {
+  transform: translateY(-2px) scale(1.006);
+}
+
+.landing-card-stack.is-exit-lifting .landing-front-card {
+  box-shadow:
+    0 42px 104px rgba(23, 24, 21, 0.2),
+    0 0 96px color-mix(in srgb, var(--card-accent) 30%, transparent);
+  transform: translateY(-9px) scale(1.045);
+  transition-duration: 240ms;
+  transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.landing-card-stack.is-exit-moving .landing-front-card {
+  background: rgba(255, 255, 255, 0.42);
+  box-shadow: 0 28px 80px rgba(23, 24, 21, 0.16);
+  transform: translate3d(var(--landing-exit-x), var(--landing-exit-y), 0)
+    scale(var(--landing-exit-scale));
+  transition-duration: 820ms, 600ms, 500ms;
+  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1), ease, ease;
+}
+
+.landing-card-stack.is-exit-fading .landing-front-card,
+.landing-card-stack.is-exit-lifting .landing-front-card,
+.landing-card-stack.is-exit-moving .landing-front-card {
+  transform-origin: center center;
+}
+
+.landing-page.is-exiting .landing-stack-button,
+.landing-page.is-exiting .landing-hint {
+  pointer-events: none;
+}
+
+.landing-page.is-exiting .landing-hint {
+  animation: none;
+  opacity: 0;
+  transform: translateY(5px);
+  transition: opacity 180ms ease, transform 240ms ease;
+}
+
+.landing-page.exit-lifting .landing-topbar,
+.landing-page.exit-moving .landing-topbar {
+  opacity: 0;
+  transform: translateY(-6px);
+  transition: opacity 260ms ease, transform 360ms ease;
 }
 
 .select-page {
@@ -249,6 +356,19 @@ button:focus-visible {
   align-items: flex-end;
   justify-content: space-between;
   padding: clamp(28px, 5vh, 52px) 0 clamp(22px, 3.5vh, 38px);
+}
+
+.selection-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.selection-note {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
 }
 
 .eyebrow {
@@ -361,7 +481,9 @@ button:focus-visible {
   font-weight: 700;
   letter-spacing: 0.08em;
   white-space: nowrap;
-  animation: recommendationTipIn 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation:
+    recommendationTipIn 320ms cubic-bezier(0.22, 1, 0.36, 1) both,
+    recommendationTipOut 400ms ease 3.32s forwards;
   pointer-events: none;
 }
 
@@ -378,6 +500,7 @@ button:focus-visible {
   transform: rotate(45deg);
 }
 
+.card-description-message,
 .journey-end-message {
   position: absolute;
   z-index: 6;
@@ -392,7 +515,7 @@ button:focus-visible {
   letter-spacing: -0.02em;
   line-height: 1.45;
   text-align: center;
-  animation: journeyEndMessage 3s ease both;
+  animation: cardSelectionMessage 3s ease both;
   pointer-events: none;
 }
 
@@ -442,8 +565,10 @@ button:focus-visible {
     scale(var(--spread-scale))
     rotate(var(--spread-rotation));
   transform-origin: center center;
+  backface-visibility: hidden;
+  contain: paint;
   transition: none;
-  will-change: transform, border-radius, box-shadow;
+  will-change: transform, opacity;
 }
 
 .select-page.is-deck-expanding.spread-spreading .choice-card.is-from-stack {
@@ -453,8 +578,7 @@ button:focus-visible {
   transition:
     transform 1120ms cubic-bezier(0.22, 1, 0.36, 1) calc(var(--spread-order) * 65ms),
     border-radius 820ms ease calc(var(--spread-order) * 65ms),
-    opacity 380ms ease calc(var(--spread-order) * 45ms),
-    box-shadow 920ms ease calc(var(--spread-order) * 65ms);
+    opacity 380ms ease calc(var(--spread-order) * 45ms);
 }
 
 .select-page.is-deck-expanding.spread-spreading .choice-card.is-from-stack.is-selected {
@@ -572,6 +696,11 @@ button:focus-visible {
   will-change: transform;
 }
 
+.select-page.is-deck-expanding .choice-card .orbit-layer,
+.select-page.is-deck-expanding .choice-card .art-core::after {
+  animation-play-state: paused;
+}
+
 .choice-card-copy {
   position: relative;
   z-index: 1;
@@ -599,7 +728,7 @@ button:focus-visible {
 .selection-check {
   position: absolute;
   z-index: 2;
-  top: 42px;
+  top: 12px;
   right: clamp(15px, 1.4vw, 22px);
   display: grid;
   width: 20px;
@@ -799,6 +928,14 @@ button:focus-visible {
   min-width: 210px;
   margin-top: 42px;
   background: var(--card-ink);
+}
+
+.use-page.is-landing-arrival .use-topbar {
+  animation: useChromeIn 460ms 40ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.use-page.is-landing-arrival .use-copy {
+  animation: useCopyIn 560ms 100ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .journey-page {
@@ -1040,19 +1177,33 @@ button:focus-visible {
 }
 
 .deck-stage {
-  display: grid;
+  position: relative;
+  display: block;
   flex: 1;
   min-height: 0;
-  grid-template-columns: minmax(290px, 390px) minmax(260px, 330px);
-  align-items: center;
-  justify-content: center;
-  gap: clamp(64px, 10vw, 150px);
   padding: clamp(28px, 4.5vh, 50px) 0 clamp(18px, 3vh, 32px);
+}
+
+.deck-card-slot {
+  position: absolute;
+  top: 50%;
+  left: 32%;
+  width: min(390px, calc((100svh - 190px) * 0.68));
+  transform: translate(-50%, -50%);
+  transition:
+    left 900ms cubic-bezier(0.22, 1, 0.36, 1),
+    width 900ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: left, width;
+}
+
+.deck-layout-focused .deck-card-slot {
+  left: 16%;
+  width: min(235px, calc((100svh - 220px) * 0.43));
 }
 
 .deck-reading-card {
   position: relative;
-  width: min(100%, 390px, calc((100svh - 190px) * 0.68));
+  width: 100%;
   aspect-ratio: 0.68;
   justify-self: center;
   padding: 9px;
@@ -1090,20 +1241,43 @@ button:focus-visible {
     radial-gradient(circle at 50% 36%, rgba(255, 255, 255, 0.52), transparent 45%),
     var(--card-soft);
   color: var(--card-ink);
+  transition: padding 900ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.deck-layout-focused .deck-reading-inner {
+  padding: 18px;
 }
 
 .deck-reading-card .card-art {
   min-height: 220px;
+  transition: min-height 900ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .deck-reading-card .art-core {
   width: clamp(86px, 8vw, 120px);
   font-size: 21px;
+  transition: width 900ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .deck-reading-card .active-card-copy h1 {
   margin-bottom: 9px;
   font-size: clamp(42px, 4.7vw, 64px);
+  transition: font-size 900ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.deck-layout-focused .deck-reading-card .card-art {
+  min-height: 112px;
+}
+
+.deck-layout-focused .deck-reading-card .art-core {
+  width: 68px;
+  font-size: 15px;
+}
+
+.deck-layout-focused .deck-reading-card .active-card-copy h1 {
+  margin-bottom: 0;
+  font-size: 30px;
+  white-space: nowrap;
 }
 
 .deck-reading-card .active-card-copy p {
@@ -1111,13 +1285,25 @@ button:focus-visible {
 }
 
 .deck-actions {
+  position: absolute;
+  top: 50%;
+  left: 66%;
   display: flex;
-  width: min(100%, 330px);
+  width: min(42vw, 440px);
   height: min(560px, calc(100svh - 190px));
   min-height: 440px;
   flex-direction: column;
   align-items: flex-start;
-  justify-self: center;
+  transform: translate(-50%, -50%);
+  transition:
+    left 900ms cubic-bezier(0.22, 1, 0.36, 1),
+    width 900ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: left, width;
+}
+
+.deck-layout-focused .deck-actions {
+  left: 50%;
+  width: min(52vw, 560px);
 }
 
 .deck-guidance .eyebrow {
@@ -1132,6 +1318,17 @@ button:focus-visible {
   font-weight: 400;
   letter-spacing: -0.055em;
   line-height: 1.08;
+}
+
+.deck-guidance .deck-prompt {
+  max-width: 100%;
+  font-size: clamp(25px, 2.35vw, 34px);
+  letter-spacing: -0.035em;
+  line-height: 1.5;
+}
+
+.deck-layout-focused .deck-guidance .deck-prompt {
+  font-size: clamp(34px, 3.5vw, 52px);
 }
 
 .deck-guidance p {
@@ -1257,11 +1454,11 @@ button:focus-visible {
 }
 
 .deck-footer button {
-  padding: 8px 12px;
+  padding: 10px 14px;
   border: 0;
   background: transparent;
   color: rgba(255, 255, 255, 0.3);
-  font-size: 9px;
+  font-size: 11px;
   letter-spacing: 0.08em;
   transition: color 180ms ease;
 }
@@ -1285,12 +1482,27 @@ button:focus-visible {
   to { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes useChromeIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes useCopyIn {
+  from { opacity: 0; filter: blur(5px); transform: translateX(16px); }
+  to { opacity: 1; filter: blur(0); transform: translateX(0); }
+}
+
 @keyframes recommendationTipIn {
   from { opacity: 0; transform: translateY(-5px) scale(0.96); }
   to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-@keyframes journeyEndMessage {
+@keyframes recommendationTipOut {
+  from { opacity: 1; transform: translateY(0) scale(1); }
+  to { opacity: 0; transform: translateY(-3px) scale(0.98); }
+}
+
+@keyframes cardSelectionMessage {
   0% { opacity: 0; filter: blur(8px); transform: scale(0.97); }
   12%, 82% { opacity: 1; filter: blur(0); transform: scale(1); }
   100% { opacity: 0; filter: blur(6px); transform: scale(1.02); }
@@ -1434,9 +1646,24 @@ button:focus-visible {
     gap: 60px;
   }
 
-  .deck-stage {
-    grid-template-columns: minmax(280px, 350px) minmax(240px, 290px);
-    gap: clamp(38px, 6vw, 70px);
+  .deck-card-slot {
+    left: 30%;
+    width: min(350px, calc((100svh - 190px) * 0.68));
+  }
+
+  .deck-layout-focused .deck-card-slot {
+    left: 15%;
+    width: min(210px, calc((100svh - 220px) * 0.43));
+  }
+
+  .deck-actions {
+    left: 68%;
+    width: min(38vw, 320px);
+  }
+
+  .deck-layout-focused .deck-actions {
+    left: 52%;
+    width: min(55vw, 500px);
   }
 }
 
@@ -1476,11 +1703,18 @@ button:focus-visible {
     border-radius: 16px;
   }
 
-  .landing-card-stack.is-pressing .landing-stack-card {
+  .landing-card-stack.is-holding .landing-stack-card {
     transform: translate(
-      calc(var(--stack-depth) * 9px),
-      calc(var(--stack-depth) * -9px)
-    ) rotate(calc(var(--stack-depth) * 0.65deg));
+      calc(var(--stack-depth) * 4.5px),
+      calc(var(--stack-depth) * -5px)
+    ) rotate(calc(var(--stack-depth) * 0.24deg));
+  }
+
+  .landing-card-stack.is-gathering .landing-stack-card {
+    transform: translate(
+      calc(var(--stack-depth) * 1.5px),
+      calc(var(--stack-depth) * -1.5px)
+    ) rotate(calc(var(--stack-depth) * 0.08deg));
   }
 
   .landing-card-stack .landing-front-card {
@@ -1531,7 +1765,8 @@ button:focus-visible {
     padding: clamp(20px, 4svh, 32px) 0 clamp(14px, 2.5svh, 22px);
   }
 
-  .selection-intro .eyebrow {
+  .selection-copy {
+    gap: 6px;
     margin-bottom: 10px;
   }
 
@@ -1718,14 +1953,26 @@ button:focus-visible {
   }
 
   .deck-stage {
+    position: static;
+    display: grid;
     flex: none;
     grid-template-columns: minmax(0, 1fr);
     gap: 38px;
     padding: 30px 0 24px;
   }
 
-  .deck-reading-card {
+  .deck-card-slot,
+  .deck-layout-focused .deck-card-slot {
+    position: relative;
+    top: auto;
+    left: auto;
     width: min(76vw, 280px);
+    justify-self: center;
+    transform: none;
+  }
+
+  .deck-reading-card {
+    width: 100%;
   }
 
   .deck-reading-inner {
@@ -1747,11 +1994,43 @@ button:focus-visible {
   }
 
   .deck-actions {
+    position: relative;
+    top: auto;
+    left: auto;
     width: min(100%, 360px);
     height: auto;
     min-height: 0;
     align-items: center;
+    justify-self: center;
     text-align: center;
+    transform: none;
+  }
+
+  .deck-layout-focused .deck-actions {
+    left: auto;
+    width: min(100%, 360px);
+  }
+
+  .deck-layout-focused .deck-guidance .deck-prompt {
+    font-size: clamp(34px, 10vw, 44px);
+  }
+
+  .deck-layout-focused .deck-reading-inner {
+    padding: 20px;
+  }
+
+  .deck-layout-focused .deck-reading-card .card-art {
+    min-height: 160px;
+  }
+
+  .deck-layout-focused .deck-reading-card .art-core {
+    width: clamp(72px, 21vw, 88px);
+    font-size: 18px;
+  }
+
+  .deck-layout-focused .deck-reading-card .active-card-copy h1 {
+    font-size: clamp(34px, 11vw, 44px);
+    white-space: normal;
   }
 
   .deck-guidance h2 {
@@ -1798,6 +2077,8 @@ button:focus-visible {
   .journey-lights .journey-words,
   .landing-card-stack,
   .landing-hint,
+  .use-page.is-landing-arrival .use-topbar,
+  .use-page.is-landing-arrival .use-copy,
   .select-page .choice-card.is-selected .orbit-layer,
   .use-page .orbit-layer,
   .select-page .choice-card.is-selected .art-core::after,
