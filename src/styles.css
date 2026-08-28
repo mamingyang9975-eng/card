@@ -307,11 +307,6 @@ button:focus-visible {
   transform: translateY(-4px);
 }
 
-.choice-card-slot {
-  visibility: hidden;
-  pointer-events: none;
-}
-
 .choice-card.is-selected {
   border-color: var(--card-accent);
   background: var(--card-soft);
@@ -381,6 +376,24 @@ button:focus-visible {
   background: rgba(255, 253, 247, 0.94);
   content: '';
   transform: rotate(45deg);
+}
+
+.journey-end-message {
+  position: absolute;
+  z-index: 6;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 28px;
+  background: rgba(255, 253, 247, 0.9);
+  color: var(--card-ink);
+  font-family: Georgia, "Songti SC", serif;
+  font-size: clamp(18px, 1.6vw, 24px);
+  letter-spacing: -0.02em;
+  line-height: 1.45;
+  text-align: center;
+  animation: journeyEndMessage 3s ease both;
+  pointer-events: none;
 }
 
 .select-page.is-deck-expanding {
@@ -1275,6 +1288,12 @@ button:focus-visible {
 @keyframes recommendationTipIn {
   from { opacity: 0; transform: translateY(-5px) scale(0.96); }
   to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes journeyEndMessage {
+  0% { opacity: 0; filter: blur(8px); transform: scale(0.97); }
+  12%, 82% { opacity: 1; filter: blur(0); transform: scale(1); }
+  100% { opacity: 0; filter: blur(6px); transform: scale(1.02); }
 }
 
 @keyframes orbitClockwise {

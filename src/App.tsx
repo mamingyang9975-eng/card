@@ -416,13 +416,15 @@ function Deck({ card, onReturn }: { card: Card; onReturn: () => void }) {
 export default function App() {
   const [selectedId, setSelectedId] = useState(cards[0].id);
   const [showRecommendationTip, setShowRecommendationTip] = useState(false);
+  const [journeyEndMessageKey, setJourneyEndMessageKey] = useState(0);
   const [screen, setScreen] = useState<Screen>('landing');
   const [used, setUsed] = useState(false);
   const [expansionOrigin, setExpansionOrigin] = useState<DeckOrigin | null>(null);
   const [spreadPhase, setSpreadPhase] = useState<SpreadPhase>('idle');
   const [spreadTransforms, setSpreadTransforms] = useState<CardSpreadTransform[]>([]);
   const activationTimer = useRef<number | null>(null);
-  const choiceCardRefs = useRef<Array<HTMLElement | null>>([]);
+  const journeyEndTimer = useRef<number | null>(null);
+  const choiceCardRefs = useRef<Array<HTMLButtonElement | null>>([]);
 
   const selectedCard = cards.find((card) => card.id === selectedId) ?? cards[0];
 
@@ -430,6 +432,9 @@ export default function App() {
     return () => {
       if (activationTimer.current !== null) {
         window.clearTimeout(activationTimer.current);
+      }
+      if (journeyEndTimer.current !== null) {
+        window.clearTimeout(journeyEndTimer.current);
       }
     };
   }, []);
@@ -481,6 +486,18 @@ export default function App() {
   function openCard() {
     setUsed(false);
     setScreen('use');
+  }
+
+  function showJourneyEndMessage() {
+    if (journeyEndTimer.current !== null) {
+      window.clearTimeout(journeyEndTimer.current);
+    }
+
+    setJourneyEndMessageKey((value) => value + 1);
+    journeyEndTimer.current = window.setTimeout(() => {
+      journeyEndTimer.current = null;
+      setJourneyEndMessageKey(0);
+    }, 3000);
   }
 
   function startFromBeginning() {
@@ -604,19 +621,6 @@ export default function App() {
           const selected = card.id === selectedId;
           const spreadTransform = spreadTransforms[index];
 
-          if (card.id === 'new-moon') {
-            return (
-              <div
-                key={card.id}
-                ref={(element) => {
-                  choiceCardRefs.current[index] = element;
-                }}
-                className="choice-card choice-card-slot"
-                aria-hidden="true"
-              />
-            );
-          }
-
           return (
             <button
               key={card.id}
@@ -642,18 +646,24 @@ export default function App() {
               aria-describedby={
                 card.id === 'begin' && selected && showRecommendationTip
                   ? 'begin-recommendation-tip'
+                  : card.id === 'new-moon' && journeyEndMessageKey > 0
+                    ? 'journey-end-message'
                   : undefined
               }
               aria-disabled={Boolean(expansionOrigin)}
               tabIndex={expansionOrigin ? -1 : undefined}
               onClick={() => {
-                if (!expansionOrigin) {
-                  setSelectedId(card.id);
-                  setShowRecommendationTip(card.id === 'begin');
+                if (expansionOrigin) return;
+                if (card.id === 'new-moon') {
+                  setShowRecommendationTip(false);
+                  showJourneyEndMessage();
+                  return;
                 }
+                setSelectedId(card.id);
+                setShowRecommendationTip(card.id === 'begin');
               }}
               onDoubleClick={() => {
-                if (!expansionOrigin) openCard();
+                if (!expansionOrigin && card.id !== 'new-moon') openCard();
               }}
             >
               {card.id === 'begin' && (
@@ -666,6 +676,16 @@ export default function App() {
                   role="status"
                 >
                   最深度的体验
+                </span>
+              )}
+              {card.id === 'new-moon' && journeyEndMessageKey > 0 && (
+                <span
+                  key={journeyEndMessageKey}
+                  id="journey-end-message"
+                  className="journey-end-message"
+                  role="status"
+                >
+                  这趟旅程到这里就结束啦
                 </span>
               )}
               <span className="card-kicker">
