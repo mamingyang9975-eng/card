@@ -307,6 +307,11 @@ button:focus-visible {
   transform: translateY(-4px);
 }
 
+.choice-card-slot {
+  visibility: hidden;
+  pointer-events: none;
+}
+
 .choice-card.is-selected {
   border-color: var(--card-accent);
   background: var(--card-soft);

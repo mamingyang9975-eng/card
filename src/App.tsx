@@ -81,7 +81,7 @@ const cards: Card[] = [
     index: '05',
     name: '新月',
     subtitle: 'THE NEW MOON',
-    description: '为即将发生的变化留白。',
+    description: '进入日常，享受当下的时光',
     accent: '#5f8fc5',
     soft: '#e6f1fb',
     ink: '#214c79',
@@ -422,7 +422,7 @@ export default function App() {
   const [spreadPhase, setSpreadPhase] = useState<SpreadPhase>('idle');
   const [spreadTransforms, setSpreadTransforms] = useState<CardSpreadTransform[]>([]);
   const activationTimer = useRef<number | null>(null);
-  const choiceCardRefs = useRef<Array<HTMLButtonElement | null>>([]);
+  const choiceCardRefs = useRef<Array<HTMLElement | null>>([]);
 
   const selectedCard = cards.find((card) => card.id === selectedId) ?? cards[0];
 
@@ -603,6 +603,19 @@ export default function App() {
         {cards.map((card, index) => {
           const selected = card.id === selectedId;
           const spreadTransform = spreadTransforms[index];
+
+          if (card.id === 'new-moon') {
+            return (
+              <div
+                key={card.id}
+                ref={(element) => {
+                  choiceCardRefs.current[index] = element;
+                }}
+                className="choice-card choice-card-slot"
+                aria-hidden="true"
+              />
+            );
+          }
 
           return (
             <button
