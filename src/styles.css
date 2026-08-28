@@ -321,6 +321,71 @@ button:focus-visible {
   opacity: 1;
 }
 
+.select-page.is-deck-expanding {
+  overflow: hidden;
+}
+
+.select-page.is-deck-expanding .card-grid {
+  overflow: visible;
+}
+
+.select-page.is-deck-expanding .selection-intro,
+.select-page.is-deck-expanding .selection-footer {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(10px);
+}
+
+.select-page.is-deck-expanding.spread-spreading .selection-intro {
+  opacity: 1;
+  transform: translateY(0);
+  transition:
+    opacity 620ms ease 230ms,
+    transform 760ms cubic-bezier(0.22, 1, 0.36, 1) 230ms;
+}
+
+.select-page.is-deck-expanding.spread-spreading .selection-footer {
+  opacity: 1;
+  transform: translateY(0);
+  transition:
+    opacity 520ms ease 790ms,
+    transform 700ms cubic-bezier(0.22, 1, 0.36, 1) 790ms;
+}
+
+.select-page.is-deck-expanding .choice-card {
+  pointer-events: none;
+}
+
+.select-page.is-deck-expanding .choice-card:not(.is-from-stack) {
+  opacity: 0;
+}
+
+.choice-card.is-from-stack {
+  border-radius: 28px;
+  opacity: 0.98;
+  transform: translate3d(var(--spread-x), var(--spread-y), 0)
+    scale(var(--spread-scale))
+    rotate(var(--spread-rotation));
+  transform-origin: center center;
+  transition: none;
+  will-change: transform, border-radius, box-shadow;
+}
+
+.select-page.is-deck-expanding.spread-spreading .choice-card.is-from-stack {
+  border-radius: 18px;
+  opacity: 1;
+  transform: translate3d(0, 0, 0) scale(1) rotate(0deg);
+  transition:
+    transform 1120ms cubic-bezier(0.22, 1, 0.36, 1) calc(var(--spread-order) * 65ms),
+    border-radius 820ms ease calc(var(--spread-order) * 65ms),
+    opacity 380ms ease calc(var(--spread-order) * 45ms),
+    box-shadow 920ms ease calc(var(--spread-order) * 65ms);
+}
+
+.select-page.is-deck-expanding.spread-spreading .choice-card.is-from-stack.is-selected {
+  transform: translate3d(0, -7px, 0) scale(1) rotate(0deg);
+}
+
 .card-kicker {
   position: relative;
   z-index: 1;
@@ -412,19 +477,19 @@ button:focus-visible {
 .spark-two { top: 42%; right: -1px; }
 .spark-three { bottom: -1px; left: 43%; }
 
-.select-page .orbit-layer-large,
+.select-page .choice-card.is-selected .orbit-layer-large,
 .use-page .orbit-layer-large {
   animation: orbitClockwise 18s linear infinite;
   will-change: transform;
 }
 
-.select-page .orbit-layer-small,
+.select-page .choice-card.is-selected .orbit-layer-small,
 .use-page .orbit-layer-small {
   animation: orbitCounterclockwise 11s linear infinite;
   will-change: transform;
 }
 
-.select-page .art-core::after,
+.select-page .choice-card.is-selected .art-core::after,
 .use-page .art-core::after {
   border-top-color: rgba(255, 255, 255, 0.24);
   border-bottom-color: rgba(255, 255, 255, 0.82);
@@ -1417,6 +1482,18 @@ button:focus-visible {
     scroll-snap-stop: always;
   }
 
+  .choice-card.is-from-stack {
+    border-radius: 23px;
+  }
+
+  .select-page.is-deck-expanding.spread-spreading .choice-card.is-from-stack {
+    border-radius: 20px;
+  }
+
+  .select-page.is-deck-expanding.spread-spreading .choice-card.is-from-stack.is-selected {
+    transform: translate3d(0, -4px, 0) scale(1) rotate(0deg);
+  }
+
   .choice-card.is-selected {
     transform: translateY(-4px);
   }
@@ -1630,9 +1707,9 @@ button:focus-visible {
   .journey-lights .journey-words,
   .landing-card-stack,
   .landing-hint,
-  .select-page .orbit-layer,
+  .select-page .choice-card.is-selected .orbit-layer,
   .use-page .orbit-layer,
-  .select-page .art-core::after,
+  .select-page .choice-card.is-selected .art-core::after,
   .use-page .art-core::after,
   .tunnel-core,
   .tunnel-ring,

@@ -1,5 +1,6 @@
 import {
   useEffect,
+  useLayoutEffect,
   useRef,
   useState,
   type CSSProperties,
@@ -18,6 +19,21 @@ type Card = {
 };
 
 type Screen = 'landing' | 'select' | 'use' | 'journey' | 'deck';
+
+type DeckOrigin = {
+  top: number;
+  left: number;
+  width: number;
+};
+
+type CardSpreadTransform = {
+  x: number;
+  y: number;
+  scale: number;
+  rotation: number;
+};
+
+type SpreadPhase = 'idle' | 'measuring' | 'ready' | 'spreading';
 
 const cards: Card[] = [
   {
@@ -144,9 +160,10 @@ function LandingDeck({
 }: {
   card: Card;
   onContinue: () => void;
-  onExpand: () => void;
+  onExpand: (origin: DeckOrigin) => void;
 }) {
   const [isPressing, setIsPressing] = useState(false);
+  const stackRef = useRef<HTMLDivElement | null>(null);
   const pressTimer = useRef<number | null>(null);
   const longPressTriggered = useRef(false);
 
@@ -169,7 +186,12 @@ function LandingDeck({
       pressTimer.current = null;
       longPressTriggered.current = true;
       setIsPressing(false);
-      onExpand();
+      const stackBounds = stackRef.current?.getBoundingClientRect();
+      onExpand({
+        top: stackBounds?.top ?? window.innerHeight / 2,
+        left: stackBounds?.left ?? window.innerWidth / 2,
+        width: stackBounds?.width ?? 280,
+      });
     }, 620);
   }
 
@@ -198,7 +220,10 @@ function LandingDeck({
       </header>
 
       <section className="landing-stage" aria-label="从启程牌开始今天的旅程">
-        <div className={`landing-card-stack ${isPressing ? 'is-pressing' : ''}`}>
+        <div
+          ref={stackRef}
+          className={`landing-card-stack ${isPressing ? 'is-pressing' : ''}`}
+        >
           {cards.slice(1).map((stackCard, index) => (
             <span
               key={stackCard.id}
@@ -392,7 +417,11 @@ export default function App() {
   const [selectedId, setSelectedId] = useState(cards[0].id);
   const [screen, setScreen] = useState<Screen>('landing');
   const [used, setUsed] = useState(false);
+  const [expansionOrigin, setExpansionOrigin] = useState<DeckOrigin | null>(null);
+  const [spreadPhase, setSpreadPhase] = useState<SpreadPhase>('idle');
+  const [spreadTransforms, setSpreadTransforms] = useState<CardSpreadTransform[]>([]);
   const activationTimer = useRef<number | null>(null);
+  const choiceCardRefs = useRef<Array<HTMLButtonElement | null>>([]);
 
   const selectedCard = cards.find((card) => card.id === selectedId) ?? cards[0];
 
@@ -404,6 +433,50 @@ export default function App() {
     };
   }, []);
 
+  useLayoutEffect(() => {
+    if (screen !== 'select' || !expansionOrigin) return;
+
+    const compactLayout = window.matchMedia('(max-width: 720px)').matches;
+    const transforms = choiceCardRefs.current.map((element, index) => {
+      if (!element) {
+        return { x: 0, y: 0, scale: 1, rotation: 0 };
+      }
+
+      const target = element.getBoundingClientRect();
+      const selectedLift = cards[index].id === selectedId ? (compactLayout ? -4 : -7) : 0;
+      const stackDepth = index;
+      const stackStepX = compactLayout ? 6 : 9;
+      const stackStepY = compactLayout ? 7 : 9;
+
+      return {
+        x: expansionOrigin.left + stackDepth * stackStepX - target.left,
+        y: expansionOrigin.top - stackDepth * stackStepY - (target.top - selectedLift),
+        scale: expansionOrigin.width / target.width,
+        rotation: stackDepth === 0 ? 0 : stackDepth * (compactLayout ? 0.4 : 0.42),
+      };
+    });
+
+    setSpreadTransforms(transforms);
+    setSpreadPhase('ready');
+
+    let secondFrame = 0;
+    const firstFrame = window.requestAnimationFrame(() => {
+      secondFrame = window.requestAnimationFrame(() => setSpreadPhase('spreading'));
+    });
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const completeTimer = window.setTimeout(() => {
+      setSpreadPhase('idle');
+      setSpreadTransforms([]);
+      setExpansionOrigin(null);
+    }, reduceMotion ? 80 : 1540);
+
+    return () => {
+      window.cancelAnimationFrame(firstFrame);
+      window.cancelAnimationFrame(secondFrame);
+      window.clearTimeout(completeTimer);
+    };
+  }, [screen, expansionOrigin, selectedId]);
+
   function openCard() {
     setUsed(false);
     setScreen('use');
@@ -412,6 +485,13 @@ export default function App() {
   function startFromBeginning() {
     setSelectedId(cards[0].id);
     openCard();
+  }
+
+  function expandDeck(origin: DeckOrigin) {
+    setSpreadTransforms([]);
+    setExpansionOrigin(origin);
+    setSpreadPhase('measuring');
+    setScreen('select');
   }
 
   function returnToCards() {
@@ -495,13 +575,15 @@ export default function App() {
       <LandingDeck
         card={cards[0]}
         onContinue={startFromBeginning}
-        onExpand={() => setScreen('select')}
+        onExpand={expandDeck}
       />
     );
   }
 
   return (
-    <main className="select-page">
+    <main
+      className={`select-page ${expansionOrigin ? 'is-deck-expanding' : ''} spread-${spreadPhase}`}
+    >
       <header className="topbar">
         <div className="brand">
           <span className="brand-dot" aria-hidden="true" />
@@ -517,18 +599,40 @@ export default function App() {
       </section>
 
       <section className="card-grid" aria-label="可选择的卡牌">
-        {cards.map((card) => {
+        {cards.map((card, index) => {
           const selected = card.id === selectedId;
+          const spreadTransform = spreadTransforms[index];
 
           return (
             <button
               key={card.id}
-              className={`choice-card ${selected ? 'is-selected' : ''}`}
-              style={cardStyle(card)}
+              ref={(element) => {
+                choiceCardRefs.current[index] = element;
+              }}
+              className={`choice-card ${selected ? 'is-selected' : ''} ${spreadTransform ? 'is-from-stack' : ''}`}
+              style={{
+                ...cardStyle(card),
+                ...(spreadTransform
+                  ? {
+                      '--spread-x': `${spreadTransform.x}px`,
+                      '--spread-y': `${spreadTransform.y}px`,
+                      '--spread-scale': spreadTransform.scale,
+                      '--spread-rotation': `${spreadTransform.rotation}deg`,
+                      '--spread-order': index,
+                      zIndex: index === 0 ? 10 : cards.length - index,
+                    }
+                  : {}),
+              } as CSSProperties}
               type="button"
               aria-pressed={selected}
-              onClick={() => setSelectedId(card.id)}
-              onDoubleClick={openCard}
+              aria-disabled={Boolean(expansionOrigin)}
+              tabIndex={expansionOrigin ? -1 : undefined}
+              onClick={() => {
+                if (!expansionOrigin) setSelectedId(card.id);
+              }}
+              onDoubleClick={() => {
+                if (!expansionOrigin) openCard();
+              }}
             >
               <span className="card-kicker">
                 <span>{card.index}</span>
