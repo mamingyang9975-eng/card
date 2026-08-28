@@ -590,12 +590,12 @@ export default function App() {
           <span className="brand-dot" aria-hidden="true" />
           <span>ARCANA</span>
         </div>
-        <p>你可以从任意一个节点进入旅程</p>
+        <p>让此刻的直觉，为你指引下一步</p>
         <span className="step-label">01 / SELECT</span>
       </header>
 
       <section className="selection-intro">
-        <span className="eyebrow">五张卡牌</span>
+        <span className="eyebrow">你可以从任意一个节点进入旅程</span>
         <h1>此刻，你需要什么？</h1>
       </section>
 
