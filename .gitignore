@@ -10,3 +10,7 @@ dist/
 *.log
 .DS_Store
 Thumbs.db
+
+# Unrelated local survey assets kept outside the card app source
+/questionnaire-qr-code.png
+/xiaohongshu-survey*.png
