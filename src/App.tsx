@@ -415,6 +415,7 @@ function Deck({ card, onReturn }: { card: Card; onReturn: () => void }) {
 
 export default function App() {
   const [selectedId, setSelectedId] = useState(cards[0].id);
+  const [showRecommendationTip, setShowRecommendationTip] = useState(false);
   const [screen, setScreen] = useState<Screen>('landing');
   const [used, setUsed] = useState(false);
   const [expansionOrigin, setExpansionOrigin] = useState<DeckOrigin | null>(null);
@@ -625,15 +626,35 @@ export default function App() {
               } as CSSProperties}
               type="button"
               aria-pressed={selected}
+              aria-describedby={
+                card.id === 'begin' && selected && showRecommendationTip
+                  ? 'begin-recommendation-tip'
+                  : undefined
+              }
               aria-disabled={Boolean(expansionOrigin)}
               tabIndex={expansionOrigin ? -1 : undefined}
               onClick={() => {
-                if (!expansionOrigin) setSelectedId(card.id);
+                if (!expansionOrigin) {
+                  setSelectedId(card.id);
+                  setShowRecommendationTip(card.id === 'begin');
+                }
               }}
               onDoubleClick={() => {
                 if (!expansionOrigin) openCard();
               }}
             >
+              {card.id === 'begin' && (
+                <span className="recommendation-badge">推荐</span>
+              )}
+              {card.id === 'begin' && selected && showRecommendationTip && (
+                <span
+                  id="begin-recommendation-tip"
+                  className="recommendation-tip"
+                  role="status"
+                >
+                  最深度的体验
+                </span>
+              )}
               <span className="card-kicker">
                 <span>{card.index}</span>
                 <span>{card.subtitle}</span>
