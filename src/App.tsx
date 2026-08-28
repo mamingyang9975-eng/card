@@ -181,6 +181,21 @@ function getDeckCards(card: Card) {
   return deckCardsById[card.id] ?? createPlaceholderDeck(card);
 }
 
+function splitCardPrompt(text: string) {
+  const dashParts = text.split(/—+/u).map((part) => part.trim()).filter(Boolean);
+  if (dashParts.length > 1) return dashParts;
+
+  const sentenceParts = text.match(/[^。！？]+[。！？]?/gu)?.map((part) => part.trim()).filter(Boolean) ?? [];
+  if (sentenceParts.length > 1) return sentenceParts;
+
+  const commaIndex = text.indexOf('，');
+  if (commaIndex > 0) {
+    return [text.slice(0, commaIndex + 1), text.slice(commaIndex + 1)].map((part) => part.trim());
+  }
+
+  return [text];
+}
+
 const particles = Array.from({ length: 84 }, (_, index) => {
   const angle = (index * 137.508 * Math.PI) / 180;
   const reach = 34 + (index % 8) * 7;
@@ -524,6 +539,7 @@ function Deck({ card, onReturn }: { card: Card; onReturn: () => void }) {
   const activeGroup = cards[groupIndex];
   const deckCards = getDeckCards(activeGroup);
   const activeCard = deckCards[activeIndex];
+  const promptParts = splitCardPrompt(activeCard.description);
 
   useEffect(() => {
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -606,7 +622,14 @@ function Deck({ card, onReturn }: { card: Card; onReturn: () => void }) {
                 <span>{activeCard.subtitle}</span>
               </div>
               <CardArtwork card={activeCard} />
-              <h2 className="deck-card-prompt">{activeCard.description}</h2>
+              <div className="deck-card-prompt">
+                <p className="deck-card-prompt-lead">{promptParts[0]}</p>
+                {promptParts.slice(1).map((part, index) => (
+                  <p key={`${activeCard.id}-prompt-${index}`} className="deck-card-prompt-detail">
+                    {part}
+                  </p>
+                ))}
+              </div>
               <div className="active-card-copy">
                 <h1>{activeCard.name}</h1>
               </div>
