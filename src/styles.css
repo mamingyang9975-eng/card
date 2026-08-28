@@ -37,10 +37,162 @@ button:focus-visible {
   outline-offset: 4px;
 }
 
+.landing-page,
 .select-page,
 .use-page,
 .deck-page {
   min-height: 100svh;
+}
+
+.landing-page {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  min-height: 100svh;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 0 4vw;
+  background:
+    radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--card-soft) 72%, transparent), transparent 34%),
+    var(--paper);
+}
+
+.landing-page::before {
+  position: absolute;
+  inset: 72px 0 0;
+  z-index: -1;
+  background:
+    linear-gradient(rgba(23, 24, 21, 0.018) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(23, 24, 21, 0.014) 1px, transparent 1px);
+  background-size: 90px 90px;
+  content: '';
+  mask-image: radial-gradient(circle at center, black, transparent 70%);
+  pointer-events: none;
+}
+
+.landing-stage {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(46px, 7vh, 76px) 0 clamp(32px, 5vh, 52px);
+}
+
+.landing-card-stack {
+  position: relative;
+  width: min(27vw, 350px, calc((100svh - 190px) * 0.68));
+  min-width: 250px;
+  aspect-ratio: 0.68;
+  animation: landingDeckIn 720ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.landing-stack-card {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--card-accent) 28%, rgba(23, 24, 21, 0.2));
+  border-radius: 28px;
+  background:
+    radial-gradient(circle at 78% 14%, color-mix(in srgb, var(--card-accent) 24%, white), transparent 28%),
+    var(--card-soft);
+  box-shadow: 0 14px 36px rgba(23, 24, 21, 0.09);
+  transform: translate(
+    calc(var(--stack-depth) * 9px),
+    calc(var(--stack-depth) * -9px)
+  ) rotate(calc(var(--stack-depth) * 0.42deg));
+  transform-origin: 50% 92%;
+  transition: transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.landing-stack-card::before {
+  position: absolute;
+  inset: 9px;
+  border: 1px solid color-mix(in srgb, var(--card-accent) 38%, transparent);
+  border-radius: 20px;
+  content: '';
+}
+
+.landing-stack-card > span {
+  position: absolute;
+  top: 17px;
+  right: 14px;
+  color: var(--card-ink);
+  font-family: Georgia, serif;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+}
+
+.landing-card-stack .landing-front-card {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.58);
+  box-shadow:
+    0 32px 80px rgba(23, 24, 21, 0.16),
+    0 0 70px color-mix(in srgb, var(--card-accent) 18%, transparent);
+  transform-origin: center bottom;
+  transition: transform 260ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 260ms ease;
+}
+
+.landing-card-stack .landing-front-card::after {
+  opacity: 0.16;
+}
+
+.landing-card-stack .landing-front-inner {
+  background:
+    radial-gradient(circle at 50% 35%, rgba(255, 255, 255, 0.58), transparent 45%),
+    var(--card-soft);
+}
+
+.landing-card-stack:hover .landing-front-card {
+  box-shadow:
+    0 38px 92px rgba(23, 24, 21, 0.19),
+    0 0 84px color-mix(in srgb, var(--card-accent) 24%, transparent);
+  transform: translateY(-4px);
+}
+
+.landing-card-stack.is-pressing .landing-front-card {
+  transform: translateY(2px) scale(0.985);
+}
+
+.landing-card-stack.is-pressing .landing-stack-card {
+  transform: translate(
+    calc(var(--stack-depth) * 12px),
+    calc(var(--stack-depth) * -11px)
+  ) rotate(calc(var(--stack-depth) * 0.7deg));
+}
+
+.landing-stack-button {
+  position: absolute;
+  inset: -42px -54px;
+  z-index: 20;
+  border: 0;
+  border-radius: 42px;
+  background: transparent;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+.landing-hint {
+  margin: clamp(32px, 4.8vh, 48px) 0 0;
+  padding: 4px 8px;
+  border: 0;
+  background: transparent;
+  color: #9a9b94;
+  cursor: pointer;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  animation: landingHintIn 520ms 420ms ease both;
+  transition: color 180ms ease;
+}
+
+.landing-hint:hover {
+  color: #65675f;
 }
 
 .select-page {
@@ -983,6 +1135,16 @@ button:focus-visible {
   to { opacity: 1; filter: blur(0); transform: translateY(0) scale(1); }
 }
 
+@keyframes landingDeckIn {
+  from { opacity: 0; transform: translateY(24px) scale(0.965); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes landingHintIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 @keyframes orbitClockwise {
   from { transform: translate(-50%, -50%) rotate(0deg); }
   to { transform: translate(-50%, -50%) rotate(360deg); }
@@ -1128,12 +1290,73 @@ button:focus-visible {
 }
 
 @media (max-width: 720px) {
+  .landing-page,
   .select-page {
     height: 100svh;
     min-height: 0;
     overflow: hidden;
     padding-right: 16px;
     padding-left: 16px;
+  }
+
+  .landing-page::before {
+    inset: 56px 0 0;
+    background-size: 64px 64px;
+  }
+
+  .landing-stage {
+    padding: clamp(38px, 7svh, 58px) 0 clamp(26px, 5svh, 42px);
+  }
+
+  .landing-card-stack {
+    width: min(72vw, 286px, calc((100svh - 174px) * 0.68));
+    min-width: 218px;
+  }
+
+  .landing-stack-card {
+    border-radius: 23px;
+    transform: translate(
+      calc(var(--stack-depth) * 6px),
+      calc(var(--stack-depth) * -7px)
+    ) rotate(calc(var(--stack-depth) * 0.4deg));
+  }
+
+  .landing-stack-card::before {
+    border-radius: 16px;
+  }
+
+  .landing-card-stack.is-pressing .landing-stack-card {
+    transform: translate(
+      calc(var(--stack-depth) * 9px),
+      calc(var(--stack-depth) * -9px)
+    ) rotate(calc(var(--stack-depth) * 0.65deg));
+  }
+
+  .landing-card-stack .landing-front-card {
+    padding: 7px;
+    border-radius: 23px;
+  }
+
+  .landing-card-stack .landing-front-inner {
+    padding: clamp(18px, 5vw, 23px);
+    border-radius: 17px;
+  }
+
+  .landing-front-card .card-art {
+    min-height: 0;
+  }
+
+  .landing-front-card .art-core {
+    width: clamp(72px, 20vw, 86px);
+    font-size: 18px;
+  }
+
+  .landing-front-card .active-card-copy h1 {
+    font-size: clamp(36px, 11vw, 46px);
+  }
+
+  .landing-hint {
+    margin-top: clamp(28px, 4.5svh, 38px);
   }
 
   .use-page {
@@ -1405,6 +1628,8 @@ button:focus-visible {
   .journey-ambient,
   .journey-words,
   .journey-lights .journey-words,
+  .landing-card-stack,
+  .landing-hint,
   .select-page .orbit-layer,
   .use-page .orbit-layer,
   .select-page .art-core::after,

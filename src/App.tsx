@@ -1,4 +1,10 @@
-import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import {
+  useEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+  type PointerEvent as ReactPointerEvent,
+} from 'react';
 
 type Card = {
   id: string;
@@ -11,7 +17,7 @@ type Card = {
   ink: string;
 };
 
-type Screen = 'select' | 'use' | 'journey' | 'deck';
+type Screen = 'landing' | 'select' | 'use' | 'journey' | 'deck';
 
 const cards: Card[] = [
   {
@@ -128,6 +134,118 @@ function CardArtwork({ card }: { card: Card }) {
         <span>{card.index}</span>
       </span>
     </div>
+  );
+}
+
+function LandingDeck({
+  card,
+  onContinue,
+  onExpand,
+}: {
+  card: Card;
+  onContinue: () => void;
+  onExpand: () => void;
+}) {
+  const [isPressing, setIsPressing] = useState(false);
+  const pressTimer = useRef<number | null>(null);
+  const longPressTriggered = useRef(false);
+
+  function clearPressTimer() {
+    if (pressTimer.current !== null) {
+      window.clearTimeout(pressTimer.current);
+      pressTimer.current = null;
+    }
+  }
+
+  useEffect(() => clearPressTimer, []);
+
+  function startPress(event: ReactPointerEvent<HTMLButtonElement>) {
+    if (event.pointerType === 'mouse' && event.button !== 0) return;
+
+    clearPressTimer();
+    longPressTriggered.current = false;
+    setIsPressing(true);
+    pressTimer.current = window.setTimeout(() => {
+      pressTimer.current = null;
+      longPressTriggered.current = true;
+      setIsPressing(false);
+      onExpand();
+    }, 620);
+  }
+
+  function endPress() {
+    clearPressTimer();
+    setIsPressing(false);
+  }
+
+  function continueJourney() {
+    if (longPressTriggered.current) {
+      longPressTriggered.current = false;
+      return;
+    }
+    onContinue();
+  }
+
+  return (
+    <main className="landing-page" style={cardStyle(card)}>
+      <header className="topbar landing-topbar">
+        <div className="brand">
+          <span className="brand-dot" aria-hidden="true" />
+          <span>ARCANA</span>
+        </div>
+        <span className="brand-mark">今日旅程</span>
+        <span className="step-label">01 / START</span>
+      </header>
+
+      <section className="landing-stage" aria-label="从启程牌开始今天的旅程">
+        <div className={`landing-card-stack ${isPressing ? 'is-pressing' : ''}`}>
+          {cards.slice(1).map((stackCard, index) => (
+            <span
+              key={stackCard.id}
+              className="landing-stack-card"
+              style={{
+                ...cardStyle(stackCard),
+                '--stack-depth': index + 1,
+                zIndex: cards.length - index,
+              } as CSSProperties}
+              aria-hidden="true"
+            >
+              <span>{stackCard.index}</span>
+            </span>
+          ))}
+
+          <article className="active-card landing-front-card" style={cardStyle(card)} aria-hidden="true">
+            <div className="active-card-inner landing-front-inner">
+              <div className="card-kicker">
+                <span>{card.index}</span>
+                <span>{card.subtitle}</span>
+              </div>
+              <CardArtwork card={card} />
+              <div className="active-card-copy">
+                <h1>{card.name}</h1>
+                <p>{card.description}</p>
+              </div>
+            </div>
+          </article>
+
+          <button
+            className="landing-stack-button"
+            type="button"
+            aria-label="点击从启程牌继续；长按展开所有卡牌"
+            onClick={continueJourney}
+            onPointerDown={startPress}
+            onPointerUp={endPress}
+            onPointerCancel={endPress}
+            onPointerLeave={endPress}
+            onContextMenu={(event) => event.preventDefault()}
+          />
+        </div>
+
+        <button className="landing-hint" type="button" onClick={onContinue}>
+          点击继续
+        </button>
+      </section>
+    </main>
   );
 }
 
@@ -272,7 +390,7 @@ function Deck({ card, onReturn }: { card: Card; onReturn: () => void }) {
 
 export default function App() {
   const [selectedId, setSelectedId] = useState(cards[0].id);
-  const [screen, setScreen] = useState<Screen>('select');
+  const [screen, setScreen] = useState<Screen>('landing');
   const [used, setUsed] = useState(false);
   const activationTimer = useRef<number | null>(null);
 
@@ -289,6 +407,11 @@ export default function App() {
   function openCard() {
     setUsed(false);
     setScreen('use');
+  }
+
+  function startFromBeginning() {
+    setSelectedId(cards[0].id);
+    openCard();
   }
 
   function returnToCards() {
@@ -367,6 +490,16 @@ export default function App() {
     );
   }
 
+  if (screen === 'landing') {
+    return (
+      <LandingDeck
+        card={cards[0]}
+        onContinue={startFromBeginning}
+        onExpand={() => setScreen('select')}
+      />
+    );
+  }
+
   return (
     <main className="select-page">
       <header className="topbar">
@@ -374,7 +507,7 @@ export default function App() {
           <span className="brand-dot" aria-hidden="true" />
           <span>ARCANA</span>
         </div>
-        <p>选择一张与你当下最接近的卡牌</p>
+        <p>你可以从任意一个节点进入旅程</p>
         <span className="step-label">01 / SELECT</span>
       </header>
 
