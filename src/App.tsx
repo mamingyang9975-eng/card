@@ -881,7 +881,7 @@ function Deck({ card, onReturn }: { card: Card; onReturn: () => void }) {
     setIsEnding(true);
   }
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const shouldAnimate = window.matchMedia('(min-width: 721px)').matches
       && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -893,7 +893,7 @@ function Deck({ card, onReturn }: { card: Card; onReturn: () => void }) {
     setLayoutPhase('showcase');
 
     const moveTimer = window.setTimeout(() => setLayoutPhase('moving'), 1000);
-    const focusTimer = window.setTimeout(() => setLayoutPhase('focused'), 1950);
+    const focusTimer = window.setTimeout(() => setLayoutPhase('focused'), 2050);
 
     return () => {
       window.clearTimeout(moveTimer);
@@ -902,6 +902,13 @@ function Deck({ card, onReturn }: { card: Card; onReturn: () => void }) {
   }, [activeCard.id, cardMotion]);
 
   function showCard(nextIndex: number, note: string) {
+    const shouldAnimate = window.matchMedia('(min-width: 721px)').matches
+      && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    if (shouldAnimate) {
+      setLayoutPhase('showcase');
+    }
+
     setActiveIndex(nextIndex);
     setCardMotion((value) => value + 1);
     setActionNote(note);
