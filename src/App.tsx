@@ -36,7 +36,7 @@ type CardSpreadTransform = {
 type SpreadPhase = 'idle' | 'measuring' | 'ready' | 'spreading';
 type HoldPhase = 'idle' | 'holding' | 'gathering';
 type LandingExitPhase = 'idle' | 'fading' | 'lifting' | 'moving';
-type DeckLayoutPhase = 'showcase' | 'focused';
+type DeckLayoutPhase = 'showcase' | 'moving' | 'focused';
 
 type LandingExitTransform = {
   x: number;
@@ -104,7 +104,7 @@ const beginningDeck: Card[] = [
     name: '观看自己',
     subtitle: 'SELF GAZE',
     description:
-      '现在脱掉一件衣物———如果你已经一丝不挂，深深地呼吸，拥抱自己，感受空气的温度和你肌肤的触感。',
+      '脱掉一件衣物，或者松开一处让身体感到束缚的地方。———如果你已经一丝不挂，缓慢呼吸三次，注意空气接触皮肤时，哪里最先有感觉。',
     accent: '#f0b84b',
     soft: '#fff3d8',
     ink: '#5f4000',
@@ -114,7 +114,7 @@ const beginningDeck: Card[] = [
     index: '02',
     name: '回想兴奋',
     subtitle: 'AROUSAL',
-    description: '最近最令你性兴奋的时刻是什么？这个时刻里的什么在吸引你？',
+    description: '最近最令你性兴奋的时刻是什么？这个时刻里的什么在吸引着你？',
     accent: '#f0b84b',
     soft: '#fff3d8',
     ink: '#5f4000',
@@ -130,25 +130,189 @@ const beginningDeck: Card[] = [
     ink: '#5f4000',
   },
   {
-    id: 'begin-breathe',
+    id: 'begin-intensity',
     index: '04',
-    name: '深呼吸',
+    name: '调节强度',
+    subtitle: 'INTENSITY',
+    description:
+      '在安全和舒服的前提下，只提高一个变量：力度、速度或接触面积。保持两次呼吸，再决定继续、恢复或停止。',
+    accent: '#f0b84b',
+    soft: '#fff3d8',
+    ink: '#5f4000',
+  },
+  {
+    id: 'begin-breathe',
+    index: '05',
+    name: '深度呼吸',
     subtitle: 'BREATHE',
-    description: '深深地呼吸三次，让空气自由地流入你的身体，慢慢把自己的感知调动起来。',
+    description:
+      '深深地呼吸三次，让空气自由地流入你的身体，慢慢把自己的感知调动起来。每一次都尽量比上一次呼吸得更深，更满。',
     accent: '#f0b84b',
     soft: '#fff3d8',
     ink: '#5f4000',
   },
   {
     id: 'begin-inner-voice',
-    index: '05',
+    index: '06',
     name: '内在声音',
     subtitle: 'INNER VOICE',
     description:
-      '闭上眼睛，想象有哪一个声音？或者哪一句话可以点燃你的此刻？只用在心里轻轻地告诉自己。',
+      '闭上眼睛，想象有哪一个声音？或者哪一句话可以点燃你的此刻？在心里轻轻地告诉自己。',
     accent: '#f0b84b',
     soft: '#fff3d8',
     ink: '#5f4000',
+  },
+];
+
+const courageDeck: Card[] = [
+  {
+    id: 'courage-adventure',
+    index: '01',
+    name: '冒险想象',
+    subtitle: 'ADVENTURE',
+    description:
+      '想象一个你最有欲望的性冒险，如果可以，你最想和谁一起开始这场冒险？如果是和自己，你会愿意在什么情况下开始这场冒险？',
+    accent: '#e77962',
+    soft: '#ffebe6',
+    ink: '#72291b',
+  },
+  {
+    id: 'courage-mirror-pose',
+    index: '02',
+    name: '镜中姿态',
+    subtitle: 'MIRROR POSE',
+    description:
+      '面对镜子，用一个你认为自己最性感的姿势拍一张照片。你最后可以选择留下，或者删除它，都没关系',
+    accent: '#e77962',
+    soft: '#ffebe6',
+    ink: '#72291b',
+  },
+  {
+    id: 'courage-body-desire',
+    index: '03',
+    name: '身体所想',
+    subtitle: 'BODY DESIRE',
+    description:
+      '将手放在你的大腿内侧，感受你的身体，你接下来想要什么？向内移动？或是静谧的停顿？现在，你可以满足它。',
+    accent: '#e77962',
+    soft: '#ffebe6',
+    ink: '#72291b',
+  },
+  {
+    id: 'courage-three-pressures',
+    index: '04',
+    name: '三种力度',
+    subtitle: 'THREE PRESSURES',
+    description:
+      '在同一位置分别尝试轻、适中、稍重三种力度，每种保持两次呼吸。身体在哪一次触碰中更想靠近？',
+    accent: '#e77962',
+    soft: '#ffebe6',
+    ink: '#72291b',
+  },
+  {
+    id: 'courage-another-self',
+    index: '05',
+    name: '另一个身份',
+    subtitle: 'ANOTHER SELF',
+    description:
+      '闭上眼睛，想象自己换了一个名字、一种身份或一种说话方式。身体变得更放松、更有力量，还是没有变化？',
+    accent: '#e77962',
+    soft: '#ffebe6',
+    ink: '#72291b',
+  },
+];
+
+const balanceDeck: Card[] = [
+  {
+    id: 'balance-self-gaze',
+    index: '01',
+    name: '观看自己',
+    subtitle: 'SELF GAZE',
+    description:
+      '再脱掉一件衣物。————如果你已经一丝不挂，深深地呼吸，放松你的肩膀，面部肌肉，和四肢。',
+    accent: '#64aa8e',
+    soft: '#e4f5ee',
+    ink: '#1f5946',
+  },
+  {
+    id: 'balance-body-focus',
+    index: '02',
+    name: '身体焦点',
+    subtitle: 'BODY FOCUS',
+    description:
+      '想象你的嘴唇，腰腹，手臂内侧，脖颈——有手指轻轻地抚过，最让你在意的部位是哪里？',
+    accent: '#64aa8e',
+    soft: '#e4f5ee',
+    ink: '#1f5946',
+  },
+  {
+    id: 'balance-approach',
+    index: '03',
+    name: '靠近与离开',
+    subtitle: 'ANTICIPATION',
+    description:
+      '让手缓慢靠近一个敏感位置，在真正碰到之前停下，再移开。重复几次，感受身体的期待。',
+    accent: '#64aa8e',
+    soft: '#e4f5ee',
+    ink: '#1f5946',
+  },
+  {
+    id: 'balance-rising-sensation',
+    index: '04',
+    name: '感受起伏',
+    subtitle: 'RISING SENSATION',
+    description:
+      '在安全和舒服的前提下，只提高力度、速度或接触面积中的一个。保持两次呼吸，最后缓缓覆盖那个敏感位置。体会此时身体的起伏。',
+    accent: '#64aa8e',
+    soft: '#e4f5ee',
+    ink: '#1f5946',
+  },
+  {
+    id: 'balance-rhythm',
+    index: '05',
+    name: '掌握节奏',
+    subtitle: 'RHYTHM',
+    description:
+      '想象一个亲密场景，先让自己掌握节奏，再让对方掌握节奏。分别停留几次呼吸。哪一种安排让身体更有感觉？放轻松，你可以不用回答。',
+    accent: '#64aa8e',
+    soft: '#e4f5ee',
+    ink: '#1f5946',
+  },
+  {
+    id: 'balance-private-words',
+    index: '06',
+    name: '私密表达',
+    subtitle: 'PRIVATE WORDS',
+    description:
+      '在备忘录里写下你能想到的最下流的话，不要有所保留，但也不要发出去。',
+    accent: '#64aa8e',
+    soft: '#e4f5ee',
+    ink: '#1f5946',
+  },
+];
+
+const newMoonDeck: Card[] = [
+  {
+    id: 'new-moon-return',
+    index: '01',
+    name: '回到日常',
+    subtitle: 'RETURN',
+    description:
+      '最后，你可以观察周围一个物品的轮廓，慢慢连接周围的环境，走进日常。',
+    accent: '#5f8fc5',
+    soft: '#e6f1fb',
+    ink: '#214c79',
+  },
+  {
+    id: 'new-moon-resistance',
+    index: '02',
+    name: '看见阻力',
+    subtitle: 'RESISTANCE',
+    description:
+      '这次旅程让你觉得最有阻力的时刻是什么？不用深入，只是看见ta',
+    accent: '#5f8fc5',
+    soft: '#e6f1fb',
+    ink: '#214c79',
   },
 ];
 
@@ -172,9 +336,9 @@ function createPlaceholderDeck(deck: Card): Card[] {
 const deckCardsById: Record<string, Card[]> = {
   begin: beginningDeck,
   insight: createPlaceholderDeck(cards[1]),
-  courage: createPlaceholderDeck(cards[2]),
-  balance: createPlaceholderDeck(cards[3]),
-  'new-moon': createPlaceholderDeck(cards[4]),
+  courage: courageDeck,
+  balance: balanceDeck,
+  'new-moon': newMoonDeck,
 };
 
 function getDeckCards(card: Card) {
@@ -535,22 +699,35 @@ function Deck({ card, onReturn }: { card: Card; onReturn: () => void }) {
   const [stepIndex, setStepIndex] = useState(0);
   const [cardMotion, setCardMotion] = useState(0);
   const [actionNote, setActionNote] = useState('');
-  const [layoutPhase, setLayoutPhase] = useState<DeckLayoutPhase>('showcase');
+  const [layoutPhase, setLayoutPhase] = useState<DeckLayoutPhase>(() => {
+    const shouldAnimate = window.matchMedia('(min-width: 721px)').matches
+      && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    return shouldAnimate ? 'showcase' : 'focused';
+  });
   const activeGroup = cards[groupIndex];
   const deckCards = getDeckCards(activeGroup);
   const activeCard = deckCards[activeIndex];
   const promptParts = splitCardPrompt(activeCard.description);
 
   useEffect(() => {
-    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const shouldAnimate = window.matchMedia('(min-width: 721px)').matches
+      && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    if (!shouldAnimate) {
+      setLayoutPhase('focused');
+      return undefined;
+    }
+
     setLayoutPhase('showcase');
 
-    const focusTimer = window.setTimeout(
-      () => setLayoutPhase('focused'),
-      reduceMotion ? 30 : 1100,
-    );
+    const moveTimer = window.setTimeout(() => setLayoutPhase('moving'), 1000);
+    const focusTimer = window.setTimeout(() => setLayoutPhase('focused'), 1950);
 
-    return () => window.clearTimeout(focusTimer);
+    return () => {
+      window.clearTimeout(moveTimer);
+      window.clearTimeout(focusTimer);
+    };
   }, [activeCard.id, cardMotion]);
 
   function showCard(nextIndex: number, note: string) {
