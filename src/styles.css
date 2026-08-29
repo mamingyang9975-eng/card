@@ -1778,6 +1778,15 @@ a.contact-value:hover {
   line-height: 1.75;
 }
 
+.deck-card-controls {
+  display: flex;
+  width: 100%;
+  gap: 8px;
+  margin-top: 14px;
+  transition: opacity 220ms ease;
+}
+
+.deck-previous-button,
 .deck-exchange-button,
 .deck-next-button,
 .deck-skip-button,
@@ -1787,31 +1796,43 @@ a.contact-value:hover {
   font-weight: 700;
 }
 
+.deck-previous-button,
 .deck-exchange-button {
   display: inline-flex;
-  height: 44px;
+  min-width: 0;
+  height: 40px;
+  flex: 1;
   align-items: center;
-  gap: 11px;
-  margin-top: 27px;
-  padding: 0 15px;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 12px;
   border: 1px solid rgba(255, 255, 255, 0.34);
   border-radius: 999px;
   background: rgba(178, 182, 178, 0.035);
   color: rgba(255, 255, 255, 0.74);
   font-size: 11px;
+  white-space: nowrap;
   transition: background 180ms ease, border-color 180ms ease, color 180ms ease, transform 180ms ease;
 }
 
+.deck-previous-button span,
 .deck-exchange-button span {
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 400;
 }
 
-.deck-exchange-button:hover {
+.deck-previous-button:not(:disabled):hover,
+.deck-exchange-button:not(:disabled):hover {
   border-color: rgba(255, 255, 255, 0.58);
   background: rgba(178, 182, 178, 0.08);
   color: #fff;
   transform: translateY(-1px);
+}
+
+.deck-previous-button:disabled,
+.deck-exchange-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.34;
 }
 
 .deck-progress {
@@ -2161,13 +2182,10 @@ a.contact-value:hover {
 }
 
 @media (min-width: 721px) {
-  .deck-exchange-button {
-    flex-shrink: 0;
-    margin-bottom: 14px;
-  }
-
   .deck-layout-showcase .deck-actions,
-  .deck-layout-moving .deck-actions {
+  .deck-layout-moving .deck-actions,
+  .deck-layout-showcase .deck-card-controls,
+  .deck-layout-moving .deck-card-controls {
     visibility: hidden;
     opacity: 0;
     filter: blur(8px);
@@ -2177,6 +2195,11 @@ a.contact-value:hover {
       width 900ms cubic-bezier(0.22, 1, 0.36, 1),
       opacity 0ms,
       filter 0ms;
+  }
+
+  .deck-card-controls {
+    filter: blur(0);
+    transition: opacity 260ms ease, filter 260ms ease;
   }
 
   .use-page {

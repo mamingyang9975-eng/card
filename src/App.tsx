@@ -1308,6 +1308,13 @@ function Deck({ card, onReturn }: { card: Card; onReturn: () => void }) {
     showCard(nextIndex, '已为你换上一张不同的牌');
   }
 
+  function previousCard() {
+    if (stepIndex === 0) return;
+
+    const previousStep = journeyDeck[stepIndex - 1];
+    showCard(previousStep.cardIndex, '已回到上一张牌', stepIndex - 1);
+  }
+
   function skipCard() {
     const nextStep = journeyDeck[stepIndex + 1];
     showCard(nextStep.cardIndex, '已跳过，旅程继续', stepIndex + 1);
@@ -1356,6 +1363,24 @@ function Deck({ card, onReturn }: { card: Card; onReturn: () => void }) {
       >
         <div className="deck-card-slot">
           <DeckReadingCard key={cardMotion} card={activeCard} group={activeGroup} />
+          <div className="deck-card-controls" aria-label="卡牌快捷操作">
+            <button
+              className="deck-previous-button"
+              type="button"
+              onClick={previousCard}
+              disabled={stepIndex === 0 || isTransitioning || isEnding}
+            >
+              <span aria-hidden="true">←</span> 上一步
+            </button>
+            <button
+              className="deck-exchange-button"
+              type="button"
+              onClick={exchangeCard}
+              disabled={isTransitioning || isEnding}
+            >
+              <span aria-hidden="true">↻</span> 换一张牌
+            </button>
+          </div>
         </div>
 
         <aside className="deck-actions">
@@ -1369,15 +1394,6 @@ function Deck({ card, onReturn }: { card: Card; onReturn: () => void }) {
               />
             </div>
           </div>
-
-          <button
-            className="deck-exchange-button"
-            type="button"
-            onClick={exchangeCard}
-            disabled={isTransitioning || isEnding}
-          >
-            <span aria-hidden="true">↻</span> 换一张牌
-          </button>
 
           <div
             className="deck-progress"
