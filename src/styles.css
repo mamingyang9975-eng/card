@@ -1625,8 +1625,10 @@ a.contact-value:hover {
 
 :is(.deck-layout-moving, .deck-layout-focused) .deck-reading-card .active-card-copy h1 {
   margin-bottom: 0;
-  font-size: 30px;
-  white-space: nowrap;
+  max-width: 100%;
+  font-size: 15px;
+  overflow-wrap: anywhere;
+  white-space: normal;
 }
 
 .deck-reading-card .active-card-copy p {
@@ -1752,7 +1754,7 @@ a.contact-value:hover {
   max-width: 310px;
   margin: 0;
   color: rgba(255, 255, 255, 0.46);
-  font-size: 12px;
+  font-size: 24px;
   line-height: 1.75;
 }
 
