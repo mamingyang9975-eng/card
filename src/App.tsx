@@ -694,7 +694,7 @@ function Journey({ card, onComplete }: { card: Card; onComplete: () => void }) {
 
 function Deck({ card, onReturn }: { card: Card; onReturn: () => void }) {
   const initialGroupIndex = Math.max(cards.findIndex((item) => item.id === card.id), 0);
-  const [groupIndex, setGroupIndex] = useState(initialGroupIndex);
+  const groupIndex = initialGroupIndex;
   const [activeIndex, setActiveIndex] = useState(0);
   const [stepIndex, setStepIndex] = useState(0);
   const [cardMotion, setCardMotion] = useState(0);
@@ -708,6 +708,7 @@ function Deck({ card, onReturn }: { card: Card; onReturn: () => void }) {
   const activeGroup = cards[groupIndex];
   const deckCards = getDeckCards(activeGroup);
   const activeCard = deckCards[activeIndex];
+  const isLastCard = stepIndex === deckCards.length - 1;
   const promptParts = splitCardPrompt(activeCard.description);
 
   useEffect(() => {
@@ -752,22 +753,13 @@ function Deck({ card, onReturn }: { card: Card; onReturn: () => void }) {
   }
 
   function nextCard() {
-    if (stepIndex < deckCards.length - 1) {
-      setStepIndex((value) => value + 1);
-      showCard((activeIndex + 1) % deckCards.length, '已进入下一张牌');
+    if (isLastCard) {
+      onReturn();
       return;
     }
 
-    if (groupIndex < cards.length - 1) {
-      setGroupIndex((value) => value + 1);
-      setActiveIndex(0);
-      setStepIndex(0);
-      setCardMotion((value) => value + 1);
-      setActionNote('当前卡组已完成，已进入下一组');
-      return;
-    }
-
-    setActionNote('今天的所有卡组都已完成');
+    setStepIndex((value) => value + 1);
+    showCard((activeIndex + 1) % deckCards.length, '已进入下一张牌');
   }
 
   return (
@@ -832,11 +824,13 @@ function Deck({ card, onReturn }: { card: Card; onReturn: () => void }) {
 
           <div className="deck-forward-actions">
             <button className="deck-next-button" type="button" onClick={nextCard}>
-              下一步 <span aria-hidden="true">→</span>
+              {isLastCard ? '结束旅程' : '下一步'} <span aria-hidden="true">→</span>
             </button>
-            <button className="deck-skip-button" type="button" onClick={skipCard}>
-              跳过这张牌
-            </button>
+            {!isLastCard && (
+              <button className="deck-skip-button" type="button" onClick={skipCard}>
+                跳过这张牌
+              </button>
+            )}
           </div>
 
           <p className="deck-action-note" aria-live="polite">{actionNote || '\u00a0'}</p>
