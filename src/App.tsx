@@ -1619,7 +1619,7 @@ function AppContent() {
           <span className="selection-note">整个旅程从左至右依次推进，强度也会逐步提升</span>
           <span className="eyebrow">你可以从任意一个节点进入旅程</span>
         </div>
-        <h1>此刻，你需要什么？</h1>
+        <h1>此刻，你的身体想要什么？</h1>
       </section>
 
       <section className="card-grid" aria-label="可选择的卡牌">
