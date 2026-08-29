@@ -599,6 +599,7 @@ function deckCardStyle(card: Card, deckTheme: Card) {
 
 const artworkAnimationEpoch = typeof performance === 'undefined' ? 0 : performance.now();
 const backgroundMusicUrl = new URL('../Soft Morning Light.mp3', import.meta.url).href;
+const musicIconUrl = new URL('./assets/icons8-music-24.png', import.meta.url).href;
 
 function CardArtwork({ card }: { card: Card }) {
   const [animationDelay] = useState(() => {
@@ -776,10 +777,8 @@ function MusicControl() {
         title={isPlaying ? '关闭背景音乐' : '播放背景音乐'}
         onClick={toggleMusic}
       >
-        <span className="music-equalizer" aria-hidden="true">
-          <span />
-          <span />
-          <span />
+        <span className="music-icon-wrap" aria-hidden="true">
+          <img className="music-icon" src={musicIconUrl} alt="" />
         </span>
       </button>
     </div>

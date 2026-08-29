@@ -448,8 +448,8 @@ a.contact-value:hover {
 .music-toggle {
   position: relative;
   display: grid;
-  width: 48px;
-  height: 48px;
+  width: 24px;
+  height: 24px;
   place-items: center;
   padding: 0;
   border: 1px solid rgba(255, 255, 255, 0.38);
@@ -477,7 +477,7 @@ a.contact-value:hover {
 }
 
 .music-toggle:active {
-  transform: scale(0.94);
+  transform: scale(0.9);
 }
 
 .music-toggle:focus-visible {
@@ -485,50 +485,39 @@ a.contact-value:hover {
   outline-offset: 3px;
 }
 
-.music-equalizer {
+.music-icon-wrap {
   position: relative;
-  display: flex;
-  width: 19px;
-  height: 19px;
-  align-items: center;
-  justify-content: center;
-  gap: 3px;
-}
-
-.music-equalizer > span {
-  width: 2px;
+  display: grid;
+  width: 12px;
   height: 12px;
-  border-radius: 999px;
-  background: currentColor;
-  transform: scaleY(0.38);
-  transform-origin: center;
+  place-items: center;
 }
 
-.music-toggle.is-playing .music-equalizer > span {
-  animation: musicBar 820ms ease-in-out infinite alternate;
+.music-icon {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
 }
 
-.music-toggle.is-playing .music-equalizer > span:nth-child(2) {
-  animation-delay: -540ms;
+.music-toggle.is-playing .music-icon {
+  animation: musicIconPulse 1.4s ease-in-out infinite alternate;
 }
 
-.music-toggle.is-playing .music-equalizer > span:nth-child(3) {
-  animation-delay: -270ms;
-}
-
-.music-toggle.is-paused .music-equalizer::after {
+.music-toggle.is-paused .music-icon-wrap::after {
   position: absolute;
-  width: 23px;
-  height: 1.5px;
+  width: 14px;
+  height: 1px;
   border-radius: 999px;
   background: currentColor;
   content: '';
   transform: rotate(-45deg);
 }
 
-@keyframes musicBar {
-  from { transform: scaleY(0.3); }
-  to { transform: scaleY(1); }
+@keyframes musicIconPulse {
+  from { opacity: 0.62; transform: scale(0.94); }
+  to { opacity: 1; transform: scale(1); }
 }
 
 .selection-intro {
@@ -2598,8 +2587,8 @@ a.contact-value:hover {
   }
 
   .deck-prompt-line.is-revealed {
-    animation-duration: 620ms;
-    animation-delay: calc(220ms + var(--prompt-line-index) * 440ms);
+    animation-duration: 1240ms;
+    animation-delay: calc(220ms + var(--prompt-line-index) * 880ms);
   }
 
   .deck-card-prompt-lead,
@@ -2751,7 +2740,7 @@ a.contact-value:hover {
   .deck-mote,
   .deck-reading-card,
   .deck-prompt-line,
-  .music-toggle.is-playing .music-equalizer > span {
+  .music-toggle.is-playing .music-icon {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
   }

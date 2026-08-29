@@ -11,6 +11,12 @@ dist/
 .DS_Store
 Thumbs.db
 
+# Local Sites packaging and publishing workspaces
+/.site-archive-*.tar.gz
+/.sites-progress-*/
+/.sites-progress-*.zip
+/.sites-publish/
+
 # Unrelated local survey assets kept outside the card app source
 /questionnaire-qr-code.png
 /xiaohongshu-survey*.png
