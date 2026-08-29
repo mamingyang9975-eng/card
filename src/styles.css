@@ -309,6 +309,8 @@ button:focus-visible {
 }
 
 .topbar {
+  position: relative;
+  z-index: 20;
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
@@ -349,6 +351,87 @@ button:focus-visible {
 .step-label {
   justify-self: end;
   color: var(--muted);
+}
+
+.topbar-meta {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-self: end;
+  gap: 18px;
+}
+
+.contact-control {
+  position: relative;
+  z-index: 2;
+}
+
+.contact-trigger {
+  appearance: none;
+  padding: 5px 0;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: none;
+  transition: color 180ms ease, opacity 180ms ease;
+}
+
+.contact-trigger:hover,
+.contact-trigger[aria-expanded='true'] {
+  color: var(--muted);
+}
+
+.contact-panel {
+  position: absolute;
+  top: calc(100% + 13px);
+  right: 0;
+  width: min(296px, calc(100vw - 32px));
+  padding: 7px 16px;
+  border: 1px solid rgba(23, 24, 21, 0.12);
+  border-radius: 16px;
+  background: rgba(250, 249, 246, 0.98);
+  box-shadow: 0 18px 50px rgba(23, 24, 21, 0.14);
+  color: var(--ink);
+  letter-spacing: 0;
+  text-align: left;
+  text-transform: none;
+  animation: contactPanelIn 180ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.contact-item {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  min-height: 52px;
+}
+
+.contact-item + .contact-item {
+  border-top: 1px solid rgba(23, 24, 21, 0.09);
+}
+
+.contact-label {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.contact-value {
+  min-width: 0;
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+  text-decoration: none;
+}
+
+a.contact-value:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .selection-intro {
@@ -1108,6 +1191,95 @@ button:focus-visible {
   transition: --card-accent 520ms ease, background-color 500ms ease, color 500ms ease;
 }
 
+.deck-page.is-ending {
+  overflow: hidden;
+}
+
+.deck-page.is-ending > :not(.journey-exit) {
+  pointer-events: none;
+}
+
+.journey-exit {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  overflow: hidden;
+  place-items: center;
+  background: rgba(0, 0, 0, 0);
+  color: #f5f0e6;
+  isolation: isolate;
+  animation: journeyExitBlackout 1.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  cursor: wait;
+}
+
+.journey-exit-words {
+  position: relative;
+  z-index: 3;
+  max-width: min(86vw, 980px);
+  margin: 0;
+  padding: 28px;
+  font-family: Georgia, "Songti SC", "STSong", serif;
+  font-size: clamp(30px, 4.2vw, 62px);
+  font-weight: 400;
+  letter-spacing: 0.035em;
+  line-height: 1.4;
+  text-align: center;
+  text-shadow: 0 0 36px rgba(247, 240, 224, 0.15);
+  opacity: 0;
+  animation: journeyExitWords 3.15s 1.42s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+.journey-exit-motes,
+.journey-exit-wash {
+  position: absolute;
+  inset: 0;
+}
+
+.journey-exit-motes {
+  z-index: 4;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.journey-exit-mote {
+  position: absolute;
+  width: var(--exit-mote-size);
+  height: var(--exit-mote-size);
+  border-radius: 50%;
+  background: #f4eddd;
+  box-shadow:
+    0 0 6px 2px rgba(248, 241, 226, 0.72),
+    0 0 16px 5px rgba(230, 220, 198, 0.22);
+  opacity: 0;
+  will-change: opacity, transform;
+  animation: journeyExitMoteGather 3.45s var(--exit-mote-delay) cubic-bezier(0.36, 0, 0.2, 1) both;
+}
+
+.journey-exit-core {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 5vmin;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: #f8f3e8;
+  box-shadow:
+    0 0 24px 9px rgba(248, 243, 232, 0.95),
+    0 0 90px 34px rgba(239, 231, 213, 0.64);
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.05);
+  animation: journeyExitCore 1.55s 6.58s cubic-bezier(0.55, 0, 0.2, 1) both;
+}
+
+.journey-exit-wash {
+  z-index: 5;
+  background: #f5f1e8;
+  opacity: 0;
+  pointer-events: none;
+  animation: journeyExitWash 1.45s 6.82s cubic-bezier(0.55, 0, 0.2, 1) both;
+}
+
 .deck-page::before {
   position: absolute;
   inset: 0;
@@ -1210,8 +1382,14 @@ button:focus-visible {
 }
 
 .deck-topbar .text-button,
-.deck-topbar .brand-mark {
+.deck-topbar .brand-mark,
+.deck-topbar .contact-trigger {
   color: rgba(255, 255, 255, 0.82);
+}
+
+.deck-topbar .contact-trigger:hover,
+.deck-topbar .contact-trigger[aria-expanded='true'] {
+  color: rgba(255, 255, 255, 0.54);
 }
 
 .deck-topbar .step-label {
@@ -1585,6 +1763,85 @@ button:focus-visible {
   to { opacity: 0; filter: blur(14px); transform: scale(1.1); }
 }
 
+@keyframes contactPanelIn {
+  from { opacity: 0; transform: translateY(-5px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes journeyExitBlackout {
+  0% { background-color: rgba(0, 0, 0, 0); }
+  100% { background-color: #000; }
+}
+
+@keyframes journeyExitWords {
+  0% {
+    opacity: 0;
+    filter: blur(12px);
+    transform: translateY(10px) scale(0.985);
+  }
+  24%, 68% {
+    opacity: 1;
+    filter: blur(0);
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    filter: blur(12px);
+    transform: translateY(-6px) scale(1.015);
+  }
+}
+
+@keyframes journeyExitMoteGather {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0) scale(0.1);
+  }
+  16% {
+    opacity: var(--exit-mote-opacity);
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  42% {
+    opacity: var(--exit-mote-opacity);
+    transform: translate3d(0, 0, 0) scale(1.15);
+  }
+  72% {
+    opacity: 0.92;
+    transform: translate3d(var(--exit-gather-x), var(--exit-gather-y), 0) scale(0.72);
+  }
+  100% {
+    opacity: 0.96;
+    transform: translate3d(
+      calc(var(--exit-gather-x) + var(--exit-burst-x)),
+      calc(var(--exit-gather-y) + var(--exit-burst-y)),
+      0
+    ) scale(10);
+  }
+}
+
+@keyframes journeyExitCore {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.05);
+  }
+  20% { opacity: 1; }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(48);
+  }
+}
+
+@keyframes journeyExitWash {
+  0% {
+    clip-path: circle(0 at 50% 50%);
+    opacity: 0;
+  }
+  14% { opacity: 0.22; }
+  100% {
+    clip-path: circle(76vmax at 50% 50%);
+    opacity: 1;
+  }
+}
+
 @keyframes ambientBreathe {
   from { opacity: 0.68; transform: scale(0.94) rotate(-2deg); }
   to { opacity: 1; transform: scale(1.06) rotate(2deg); }
@@ -1697,6 +1954,10 @@ button:focus-visible {
   }
 
   .use-topbar {
+    grid-template-columns: 1fr auto 1fr;
+  }
+
+  .deck-topbar {
     grid-template-columns: 1fr auto 1fr;
   }
 
@@ -1829,6 +2090,10 @@ button:focus-visible {
     min-height: 56px;
   }
 
+  .topbar-meta .step-label {
+    display: none;
+  }
+
   .selection-intro {
     display: block;
     flex: none;
@@ -1945,6 +2210,10 @@ button:focus-visible {
     grid-template-columns: 1fr 1fr;
   }
 
+  .deck-topbar {
+    grid-template-columns: 1fr 1fr;
+  }
+
   .use-stage {
     grid-template-columns: minmax(0, 1fr);
     min-height: calc(100svh - 56px);
@@ -2016,6 +2285,13 @@ button:focus-visible {
 
   .journey-words p {
     font-size: clamp(27px, 8.5vw, 38px);
+  }
+
+  .journey-exit-words {
+    max-width: 92vw;
+    padding: 22px;
+    font-size: clamp(28px, 8.2vw, 42px);
+    letter-spacing: 0.015em;
   }
 
   .skip-journey {
@@ -2218,5 +2494,22 @@ button:focus-visible {
   .deck-reading-card {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
+  }
+
+  .journey-exit {
+    animation: journeyExitBlackout 160ms ease-out forwards !important;
+  }
+
+  .journey-exit-words {
+    animation: journeyExitWords 520ms 150ms ease both !important;
+  }
+
+  .journey-exit-mote,
+  .journey-exit-core {
+    display: none;
+  }
+
+  .journey-exit-wash {
+    animation: journeyExitWash 240ms 720ms ease-out both !important;
   }
 }

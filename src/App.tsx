@@ -56,14 +56,14 @@ const cards: Card[] = [
     ink: '#5f4000',
   },
   {
-    id: 'insight',
+    id: 'balance',
     index: '02',
-    name: '洞察',
-    subtitle: 'THE INSIGHT',
-    description: '看见尚未显露的线索。',
-    accent: '#8c79dc',
-    soft: '#eeeaff',
-    ink: '#3d2c7a',
+    name: '平衡',
+    subtitle: 'THE BALANCE',
+    description: '让失序重新归于平静。',
+    accent: '#64aa8e',
+    soft: '#e4f5ee',
+    ink: '#1f5946',
   },
   {
     id: 'courage',
@@ -76,14 +76,14 @@ const cards: Card[] = [
     ink: '#72291b',
   },
   {
-    id: 'balance',
+    id: 'insight',
     index: '04',
-    name: '平衡',
-    subtitle: 'THE BALANCE',
-    description: '让失序重新归于平静。',
-    accent: '#64aa8e',
-    soft: '#e4f5ee',
-    ink: '#1f5946',
+    name: '洞察',
+    subtitle: 'THE INSIGHT',
+    description: '看见尚未显露的线索。',
+    accent: '#8c79dc',
+    soft: '#eeeaff',
+    ink: '#3d2c7a',
   },
   {
     id: 'new-moon',
@@ -449,6 +449,28 @@ const deckMotes = Array.from({ length: 16 }, (_, index) => ({
   } as CSSProperties,
 }));
 
+const journeyExitMotes = Array.from({ length: 132 }, (_, index) => {
+  const left = 4 + ((index * 47) % 92);
+  const top = 3 + ((index * 71) % 94);
+  const angle = (index * 137.508 * Math.PI) / 180;
+  const burstReach = 45 + (index % 9) * 4;
+
+  return {
+    id: index,
+    style: {
+      left: `${left}%`,
+      top: `${top}%`,
+      '--exit-mote-size': `${1.5 + (index % 5) * 0.72}px`,
+      '--exit-mote-opacity': `${0.38 + (index % 6) * 0.1}`,
+      '--exit-mote-delay': `${3.72 + (index % 19) * 0.045}s`,
+      '--exit-gather-x': `${50 - left}vw`,
+      '--exit-gather-y': `${50 - top}vh`,
+      '--exit-burst-x': `${Math.cos(angle) * burstReach}vw`,
+      '--exit-burst-y': `${Math.sin(angle) * burstReach}vh`,
+    } as CSSProperties,
+  };
+});
+
 function cardStyle(card: Card) {
   return {
     '--card-accent': card.accent,
@@ -479,6 +501,65 @@ function CardArtwork({ card }: { card: Card }) {
       <span className="art-core">
         <span>{card.index}</span>
       </span>
+    </div>
+  );
+}
+
+function ContactControl() {
+  const [isOpen, setIsOpen] = useState(false);
+  const contactRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    function closeOnOutsideClick(event: PointerEvent) {
+      const target = event.target;
+      if (target instanceof Node && !contactRef.current?.contains(target)) {
+        setIsOpen(false);
+      }
+    }
+
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        setIsOpen(false);
+      }
+    }
+
+    document.addEventListener('pointerdown', closeOnOutsideClick);
+    document.addEventListener('keydown', closeOnEscape);
+
+    return () => {
+      document.removeEventListener('pointerdown', closeOnOutsideClick);
+      document.removeEventListener('keydown', closeOnEscape);
+    };
+  }, [isOpen]);
+
+  return (
+    <div className="contact-control" ref={contactRef}>
+      <button
+        className="contact-trigger"
+        type="button"
+        aria-expanded={isOpen}
+        aria-controls="contact-details"
+        onClick={() => setIsOpen((value) => !value)}
+      >
+        联系我们
+      </button>
+
+      {isOpen && (
+        <div id="contact-details" className="contact-panel" aria-label="联系方式">
+          <div className="contact-item">
+            <span className="contact-label">邮箱</span>
+            <a className="contact-value" href="mailto:mamingyang9975@gmail.com">
+              mamingyang9975@gmail.com
+            </a>
+          </div>
+          <div className="contact-item">
+            <span className="contact-label">微信</span>
+            <span className="contact-value">Yao11Jiu</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -618,7 +699,10 @@ function LandingDeck({
           <span>ARCANA</span>
         </div>
         <span className="brand-mark">今日旅程</span>
-        <span className="step-label">01 / START</span>
+        <div className="topbar-meta">
+          <span className="step-label">01 / START</span>
+          <ContactControl />
+        </div>
       </header>
 
       <section className="landing-stage" aria-label="从启程牌开始今天的旅程">
@@ -750,6 +834,28 @@ function Journey({ card, onComplete }: { card: Card; onComplete: () => void }) {
   );
 }
 
+function JourneyExit({ onComplete }: { onComplete: () => void }) {
+  useEffect(() => {
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const completeTimer = window.setTimeout(onComplete, reduceMotion ? 1050 : 8300);
+
+    return () => window.clearTimeout(completeTimer);
+  }, [onComplete]);
+
+  return (
+    <section className="journey-exit" role="status" aria-live="polite" aria-label="旅程正在结束">
+      <p className="journey-exit-words">现在，享受你自己的时刻。</p>
+      <div className="journey-exit-motes" aria-hidden="true">
+        {journeyExitMotes.map((mote) => (
+          <span key={mote.id} className="journey-exit-mote" style={mote.style} />
+        ))}
+        <span className="journey-exit-core" />
+        <span className="journey-exit-wash" />
+      </div>
+    </section>
+  );
+}
+
 function Deck({ card, onReturn }: { card: Card; onReturn: () => void }) {
   const initialGroupIndex = Math.max(cards.findIndex((item) => item.id === card.id), 0);
   const groupIndex = initialGroupIndex;
@@ -757,6 +863,7 @@ function Deck({ card, onReturn }: { card: Card; onReturn: () => void }) {
   const [stepIndex, setStepIndex] = useState(0);
   const [cardMotion, setCardMotion] = useState(0);
   const [actionNote, setActionNote] = useState('');
+  const [isEnding, setIsEnding] = useState(false);
   const [layoutPhase, setLayoutPhase] = useState<DeckLayoutPhase>(() => {
     const shouldAnimate = window.matchMedia('(min-width: 721px)').matches
       && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -768,6 +875,11 @@ function Deck({ card, onReturn }: { card: Card; onReturn: () => void }) {
   const activeCard = deckCards[activeIndex];
   const isLastCard = stepIndex === deckCards.length - 1;
   const promptParts = splitCardPrompt(activeCard.description);
+
+  function finishJourney() {
+    if (isEnding) return;
+    setIsEnding(true);
+  }
 
   useEffect(() => {
     const shouldAnimate = window.matchMedia('(min-width: 721px)').matches
@@ -812,7 +924,7 @@ function Deck({ card, onReturn }: { card: Card; onReturn: () => void }) {
 
   function nextCard() {
     if (isLastCard) {
-      onReturn();
+      finishJourney();
       return;
     }
 
@@ -821,7 +933,10 @@ function Deck({ card, onReturn }: { card: Card; onReturn: () => void }) {
   }
 
   return (
-    <main className={`deck-page deck-layout-${layoutPhase}`} style={cardStyle(activeGroup)}>
+    <main
+      className={`deck-page deck-layout-${layoutPhase} ${isEnding ? 'is-ending' : ''}`}
+      style={cardStyle(activeGroup)}
+    >
       <div className="deck-atmosphere" aria-hidden="true">
         <span className="deck-ambient-glow" />
         {deckMotes.map((mote) => (
@@ -835,9 +950,12 @@ function Deck({ card, onReturn }: { card: Card; onReturn: () => void }) {
           <span>ARCANA</span>
         </div>
         <span className="brand-mark">今日旅程</span>
-        <span className="step-label">
-          {String(stepIndex + 1).padStart(2, '0')} / {String(deckCards.length).padStart(2, '0')}
-        </span>
+        <div className="topbar-meta">
+          <span className="step-label">
+            {String(stepIndex + 1).padStart(2, '0')} / {String(deckCards.length).padStart(2, '0')}
+          </span>
+          <ContactControl />
+        </div>
       </header>
 
       <section className="deck-stage" aria-label={`${activeGroup.name}卡组，当前卡牌为${activeCard.name}`}>
@@ -882,7 +1000,7 @@ function Deck({ card, onReturn }: { card: Card; onReturn: () => void }) {
 
           <div className="deck-forward-actions">
             <button className="deck-next-button" type="button" onClick={nextCard}>
-              {isLastCard ? '结束旅程' : '下一步'} <span aria-hidden="true">→</span>
+              {isLastCard ? '结束这次旅程' : '下一步'} <span aria-hidden="true">→</span>
             </button>
             {!isLastCard && (
               <button className="deck-skip-button" type="button" onClick={skipCard}>
@@ -896,8 +1014,10 @@ function Deck({ card, onReturn }: { card: Card; onReturn: () => void }) {
       </section>
 
       <footer className="deck-footer">
-        <button type="button" onClick={onReturn}>结束今天的旅程</button>
+        <button type="button" onClick={finishJourney}>结束这次旅程</button>
       </footer>
+
+      {isEnding && <JourneyExit onComplete={onReturn} />}
     </main>
   );
 }
@@ -1098,7 +1218,10 @@ export default function App() {
             <span aria-hidden="true">←</span> 返回选择
           </button>
           <span className="brand-mark">ARC / 05</span>
-          <span className="step-label">02 / USE</span>
+          <div className="topbar-meta">
+            <span className="step-label">02 / USE</span>
+            <ContactControl />
+          </div>
         </header>
 
         <section className="use-stage" aria-live="polite">
@@ -1159,7 +1282,10 @@ export default function App() {
           <span>ARCANA</span>
         </div>
         <p>让此刻的直觉，为你指引下一步</p>
-        <span className="step-label">01 / SELECT</span>
+        <div className="topbar-meta">
+          <span className="step-label">01 / SELECT</span>
+          <ContactControl />
+        </div>
       </header>
 
       <section className="selection-intro">
