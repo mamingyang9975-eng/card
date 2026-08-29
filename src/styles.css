@@ -1780,19 +1780,19 @@ a.contact-value:hover {
   display: inline-flex;
   height: 44px;
   align-items: center;
-  gap: 22px;
+  gap: 11px;
   margin-top: 27px;
-  padding: 0 30px;
+  padding: 0 15px;
   border: 1px solid rgba(255, 255, 255, 0.34);
   border-radius: 999px;
   background: rgba(178, 182, 178, 0.035);
   color: rgba(255, 255, 255, 0.74);
-  font-size: 22px;
+  font-size: 11px;
   transition: background 180ms ease, border-color 180ms ease, color 180ms ease, transform 180ms ease;
 }
 
 .deck-exchange-button span {
-  font-size: 32px;
+  font-size: 16px;
   font-weight: 400;
 }
 
