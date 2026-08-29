@@ -1561,13 +1561,13 @@ a.contact-value:hover {
 
 .deck-guidance .deck-prompt {
   max-width: 100%;
-  font-size: clamp(25px, 2.35vw, 34px);
+  font-size: clamp(12.5px, 1.175vw, 17px);
   letter-spacing: -0.035em;
   line-height: 1.5;
 }
 
 :is(.deck-layout-moving, .deck-layout-focused) .deck-guidance .deck-prompt {
-  font-size: clamp(30px, 2.9vw, 44px);
+  font-size: clamp(15px, 1.45vw, 22px);
 }
 
 .deck-guidance p {
