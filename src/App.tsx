@@ -419,6 +419,110 @@ function splitCardPrompt(text: string) {
   return [text];
 }
 
+function measureVisualLines(element: HTMLElement) {
+  const textNode = element.firstChild;
+  const text = textNode?.textContent ?? '';
+
+  if (!(textNode instanceof Text) || !text) return text ? [text] : [];
+
+  const range = document.createRange();
+  const lines: string[] = [];
+  let lineStart = 0;
+  let offset = 0;
+  let lineTop: number | undefined;
+
+  for (const character of Array.from(text)) {
+    const nextOffset = offset + character.length;
+    range.setStart(textNode, offset);
+    range.setEnd(textNode, nextOffset);
+    const characterTop = range.getBoundingClientRect().top;
+
+    if (lineTop !== undefined && Math.abs(characterTop - lineTop) > 1) {
+      lines.push(text.slice(lineStart, offset));
+      lineStart = offset;
+    }
+
+    lineTop = characterTop;
+    offset = nextOffset;
+  }
+
+  lines.push(text.slice(lineStart));
+  range.detach();
+  return lines.filter(Boolean);
+}
+
+function ProgressiveCardPrompt({ parts }: { parts: string[] }) {
+  const measureRef = useRef<HTMLDivElement>(null);
+  const [visualLines, setVisualLines] = useState<string[][] | null>(null);
+  const promptKey = parts.join('\u0000');
+
+  useLayoutEffect(() => {
+    const measureElement = measureRef.current;
+    if (!measureElement) return undefined;
+
+    const updateLines = () => {
+      const measuredLines = Array.from(measureElement.children).map((element) =>
+        measureVisualLines(element as HTMLElement),
+      );
+
+      if (measuredLines.some((lines) => lines.length > 0)) {
+        setVisualLines((currentLines) =>
+          JSON.stringify(currentLines) === JSON.stringify(measuredLines) ? currentLines : measuredLines,
+        );
+      }
+    };
+
+    updateLines();
+    const resizeObserver = new ResizeObserver(updateLines);
+    resizeObserver.observe(measureElement);
+
+    return () => resizeObserver.disconnect();
+  }, [promptKey]);
+
+  let lineIndex = 0;
+
+  return (
+    <div className="deck-card-prompt-copy">
+      <div ref={measureRef} className="deck-card-prompt-measure" aria-hidden="true">
+        {parts.map((part, index) => (
+          <p
+            key={`measure-${index}`}
+            className={index === 0 ? 'deck-card-prompt-lead' : 'deck-card-prompt-detail'}
+          >
+            {part}
+          </p>
+        ))}
+      </div>
+
+      {visualLines && (
+        <div className="deck-card-prompt-reveal">
+          {visualLines.map((lines, partIndex) => (
+            <p
+              key={`reveal-${partIndex}`}
+              className={partIndex === 0 ? 'deck-card-prompt-lead' : 'deck-card-prompt-detail'}
+            >
+              {lines.map((line) => {
+                const currentLineIndex = lineIndex;
+                lineIndex += 1;
+
+                return (
+                  <span
+                    key={`${currentLineIndex}-${line}`}
+                    className="deck-prompt-line"
+                    style={{ '--prompt-line-index': currentLineIndex } as CSSProperties}
+                  >
+                    {line}
+                  </span>
+                );
+              })}
+            </p>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 const particles = Array.from({ length: 84 }, (_, index) => {
   const angle = (index * 137.508 * Math.PI) / 180;
   const reach = 34 + (index % 8) * 7;
@@ -1009,12 +1113,7 @@ function Deck({ card, onReturn }: { card: Card; onReturn: () => void }) {
               </div>
               <CardArtwork card={activeCard} />
               <div className="deck-card-prompt">
-                <p className="deck-card-prompt-lead">{promptParts[0]}</p>
-                {promptParts.slice(1).map((part, index) => (
-                  <p key={`${activeCard.id}-prompt-${index}`} className="deck-card-prompt-detail">
-                    {part}
-                  </p>
-                ))}
+                <ProgressiveCardPrompt parts={promptParts} />
               </div>
               <div className="active-card-copy">
                 <h1>{activeCard.name}</h1>

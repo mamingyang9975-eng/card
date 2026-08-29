@@ -1918,6 +1918,19 @@ a.contact-value:hover {
   50% { transform: translate3d(0, -6px, 0); }
 }
 
+@keyframes deckPromptLineIn {
+  from {
+    opacity: 0;
+    filter: blur(5px);
+    transform: translateY(7px);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+    transform: translateY(0);
+  }
+}
+
 @media (min-width: 721px) {
   .deck-layout-showcase .deck-actions,
   .deck-layout-moving .deck-actions {
@@ -2352,6 +2365,28 @@ a.contact-value:hover {
     text-align: left;
   }
 
+  .deck-card-prompt-copy {
+    position: relative;
+    width: 100%;
+  }
+
+  .deck-card-prompt-measure {
+    visibility: hidden;
+  }
+
+  .deck-card-prompt-reveal {
+    position: absolute;
+    inset: 0;
+  }
+
+  .deck-prompt-line {
+    display: block;
+    opacity: 0;
+    animation: deckPromptLineIn 520ms cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: calc(260ms + var(--prompt-line-index) * 420ms);
+    will-change: opacity, filter, transform;
+  }
+
   .deck-card-prompt-lead,
   .deck-card-prompt-detail {
     margin: 0;
@@ -2499,7 +2534,8 @@ a.contact-value:hover {
   .light-particle,
   .deck-ambient-glow,
   .deck-mote,
-  .deck-reading-card {
+  .deck-reading-card,
+  .deck-prompt-line {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
   }
