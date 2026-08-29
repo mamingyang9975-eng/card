@@ -2382,8 +2382,8 @@ a.contact-value:hover {
   .deck-prompt-line {
     display: block;
     opacity: 0;
-    animation: deckPromptLineIn 520ms cubic-bezier(0.22, 1, 0.36, 1) both;
-    animation-delay: calc(260ms + var(--prompt-line-index) * 420ms);
+    animation: deckPromptLineIn 1040ms cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: calc(260ms + var(--prompt-line-index) * 840ms);
     will-change: opacity, filter, transform;
   }
 
