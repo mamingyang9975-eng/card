@@ -1,0 +1,2127 @@
+:root {
+  --paper: #f5f3ee;
+  --ink: #171815;
+  --muted: #77786f;
+  --line: rgba(23, 24, 21, 0.14);
+}
+
+@property --card-accent {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #f0b84b;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--paper);
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: Inter, "PingFang SC", "Microsoft YaHei", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+button {
+  color: inherit;
+  font: inherit;
+}
+
+button:focus-visible {
+  outline: 3px solid rgba(23, 24, 21, 0.3);
+  outline-offset: 4px;
+}
+
+.landing-page,
+.select-page,
+.use-page,
+.deck-page {
+  min-height: 100svh;
+}
+
+.landing-page {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  min-height: 100svh;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 0 4vw;
+  background:
+    radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--card-soft) 72%, transparent), transparent 34%),
+    var(--paper);
+}
+
+.landing-page::before {
+  position: absolute;
+  inset: 72px 0 0;
+  z-index: -1;
+  background:
+    linear-gradient(rgba(23, 24, 21, 0.018) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(23, 24, 21, 0.014) 1px, transparent 1px);
+  background-size: 90px 90px;
+  content: '';
+  mask-image: radial-gradient(circle at center, black, transparent 70%);
+  pointer-events: none;
+}
+
+.landing-stage {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(46px, 7vh, 76px) 0 clamp(32px, 5vh, 52px);
+}
+
+.landing-card-stack {
+  position: relative;
+  width: min(27vw, 350px, calc((100svh - 190px) * 0.68));
+  min-width: 250px;
+  aspect-ratio: 0.68;
+  animation: landingDeckIn 720ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.landing-stack-card {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--card-accent) 28%, rgba(23, 24, 21, 0.2));
+  border-radius: 28px;
+  background:
+    radial-gradient(circle at 78% 14%, color-mix(in srgb, var(--card-accent) 24%, white), transparent 28%),
+    var(--card-soft);
+  box-shadow: 0 14px 36px rgba(23, 24, 21, 0.09);
+  transform: translate(
+    calc(var(--stack-depth) * 9px),
+    calc(var(--stack-depth) * -9px)
+  ) rotate(calc(var(--stack-depth) * 0.42deg));
+  transform-origin: 50% 92%;
+  backface-visibility: hidden;
+  transition:
+    transform 320ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 260ms ease,
+    filter 320ms ease;
+  will-change: transform, opacity, filter;
+}
+
+.landing-stack-card::before {
+  position: absolute;
+  inset: 9px;
+  border: 1px solid color-mix(in srgb, var(--card-accent) 38%, transparent);
+  border-radius: 20px;
+  content: '';
+}
+
+.landing-stack-card > span {
+  position: absolute;
+  top: 17px;
+  right: 14px;
+  color: var(--card-ink);
+  font-family: Georgia, serif;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+}
+
+.landing-card-stack .landing-front-card {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.58);
+  box-shadow:
+    0 32px 80px rgba(23, 24, 21, 0.16),
+    0 0 70px color-mix(in srgb, var(--card-accent) 18%, transparent);
+  transform-origin: center bottom;
+  backface-visibility: hidden;
+  transition:
+    transform 260ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 260ms ease,
+    background-color 260ms ease;
+  will-change: transform, box-shadow;
+}
+
+.landing-card-stack .landing-front-card::after {
+  opacity: 0.16;
+}
+
+.landing-card-stack .landing-front-inner {
+  background:
+    radial-gradient(circle at 50% 35%, rgba(255, 255, 255, 0.58), transparent 45%),
+    var(--card-soft);
+}
+
+.landing-card-stack:hover .landing-front-card {
+  box-shadow:
+    0 38px 92px rgba(23, 24, 21, 0.19),
+    0 0 84px color-mix(in srgb, var(--card-accent) 24%, transparent);
+  transform: translateY(-4px);
+}
+
+.landing-card-stack.is-holding .landing-front-card {
+  transform: translateY(1px) scale(0.992);
+}
+
+.landing-card-stack.is-holding .landing-stack-card {
+  transform: translate(
+    calc(var(--stack-depth) * 7px),
+    calc(var(--stack-depth) * -7px)
+  ) rotate(calc(var(--stack-depth) * 0.28deg));
+  transition-duration: 560ms;
+  transition-timing-function: cubic-bezier(0.25, 0.7, 0.2, 1);
+}
+
+.landing-card-stack.is-gathering .landing-front-card {
+  box-shadow:
+    0 24px 58px rgba(23, 24, 21, 0.13),
+    0 0 54px color-mix(in srgb, var(--card-accent) 13%, transparent);
+  transform: translateY(2px) scale(0.978);
+  transition-duration: 220ms;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.landing-card-stack.is-gathering .landing-stack-card {
+  transform: translate(
+    calc(var(--stack-depth) * 2px),
+    calc(var(--stack-depth) * -2px)
+  ) rotate(calc(var(--stack-depth) * 0.08deg));
+  transition-duration: 220ms;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.landing-stack-button {
+  position: absolute;
+  inset: -42px -54px;
+  z-index: 20;
+  border: 0;
+  border-radius: 42px;
+  background: transparent;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+.landing-hint {
+  margin: clamp(32px, 4.8vh, 48px) 0 0;
+  padding: 4px 8px;
+  border: 0;
+  background: transparent;
+  color: #9a9b94;
+  cursor: pointer;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  animation: landingHintIn 520ms 420ms ease both;
+  transition: color 180ms ease;
+}
+
+.landing-hint:hover {
+  color: #65675f;
+}
+
+.landing-use-target {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: -10;
+  width: 100vw;
+  height: 100svh;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.landing-card-stack.is-exit-fading,
+.landing-card-stack.is-exit-lifting,
+.landing-card-stack.is-exit-moving {
+  animation: none;
+}
+
+.landing-card-stack.is-exit-fading .landing-stack-card,
+.landing-card-stack.is-exit-lifting .landing-stack-card,
+.landing-card-stack.is-exit-moving .landing-stack-card {
+  opacity: 0;
+  filter: blur(4px);
+  transform: translate(
+    calc(var(--stack-depth) * 5px),
+    calc(var(--stack-depth) * -12px - 16px)
+  ) scale(0.91);
+  transition-duration: 360ms, 260ms, 300ms;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1), ease, ease;
+}
+
+.landing-card-stack.is-exit-fading .landing-front-card {
+  transform: translateY(-2px) scale(1.006);
+}
+
+.landing-card-stack.is-exit-lifting .landing-front-card {
+  box-shadow:
+    0 42px 104px rgba(23, 24, 21, 0.2),
+    0 0 96px color-mix(in srgb, var(--card-accent) 30%, transparent);
+  transform: translateY(-9px) scale(1.045);
+  transition-duration: 240ms;
+  transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.landing-card-stack.is-exit-moving .landing-front-card {
+  background: rgba(255, 255, 255, 0.42);
+  box-shadow: 0 28px 80px rgba(23, 24, 21, 0.16);
+  transform: translate3d(var(--landing-exit-x), var(--landing-exit-y), 0)
+    scale(var(--landing-exit-scale));
+  transition-duration: 820ms, 600ms, 500ms;
+  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1), ease, ease;
+}
+
+.landing-card-stack.is-exit-fading .landing-front-card,
+.landing-card-stack.is-exit-lifting .landing-front-card,
+.landing-card-stack.is-exit-moving .landing-front-card {
+  transform-origin: center center;
+}
+
+.landing-page.is-exiting .landing-stack-button,
+.landing-page.is-exiting .landing-hint {
+  pointer-events: none;
+}
+
+.landing-page.is-exiting .landing-hint {
+  animation: none;
+  opacity: 0;
+  transform: translateY(5px);
+  transition: opacity 180ms ease, transform 240ms ease;
+}
+
+.landing-page.exit-lifting .landing-topbar,
+.landing-page.exit-moving .landing-topbar {
+  opacity: 0;
+  transform: translateY(-6px);
+  transition: opacity 260ms ease, transform 360ms ease;
+}
+
+.select-page {
+  display: flex;
+  flex-direction: column;
+  padding: 0 4vw;
+}
+
+.topbar {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  min-height: 72px;
+  border-bottom: 1px solid var(--line);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.topbar > p {
+  margin: 0;
+  color: var(--muted);
+  letter-spacing: 0.02em;
+  text-transform: none;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+}
+
+.brand-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--ink);
+  box-shadow: 0 0 0 4px rgba(23, 24, 21, 0.08);
+}
+
+.brand-mark {
+  justify-self: center;
+  font-weight: 700;
+}
+
+.step-label {
+  justify-self: end;
+  color: var(--muted);
+}
+
+.selection-intro {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: clamp(28px, 5vh, 52px) 0 clamp(22px, 3.5vh, 38px);
+}
+
+.selection-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.selection-note {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.eyebrow {
+  display: block;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.selection-intro h1 {
+  margin: 0;
+  font-family: Georgia, "Songti SC", serif;
+  font-size: clamp(34px, 4vw, 62px);
+  font-weight: 400;
+  letter-spacing: -0.045em;
+  line-height: 0.98;
+}
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(150px, 1fr));
+  gap: clamp(10px, 1.5vw, 22px);
+  width: 100%;
+}
+
+.choice-card {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  aspect-ratio: 0.68;
+  flex-direction: column;
+  overflow: hidden;
+  padding: clamp(15px, 1.4vw, 22px);
+  border: 1px solid rgba(23, 24, 21, 0.12);
+  border-radius: 18px;
+  background: #ebe9e3;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.7) inset;
+  cursor: pointer;
+  text-align: left;
+  transition: background 180ms ease, border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+}
+
+.choice-card::before {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 35%, var(--card-soft), transparent 60%);
+  content: '';
+  opacity: 0;
+  transition: opacity 180ms ease;
+}
+
+.choice-card:hover {
+  border-color: rgba(23, 24, 21, 0.3);
+  transform: translateY(-4px);
+}
+
+.choice-card.is-selected {
+  border-color: var(--card-accent);
+  background: var(--card-soft);
+  box-shadow:
+    0 16px 38px rgba(23, 24, 21, 0.1),
+    0 0 34px color-mix(in srgb, var(--card-accent) 34%, transparent),
+    0 0 76px color-mix(in srgb, var(--card-accent) 18%, transparent);
+  transform: translateY(-7px);
+}
+
+.choice-card.is-selected::before {
+  opacity: 1;
+}
+
+.recommendation-badge {
+  position: absolute;
+  z-index: 4;
+  top: 0;
+  left: clamp(15px, 1.4vw, 22px);
+  display: inline-flex;
+  height: 24px;
+  align-items: center;
+  padding: 0 11px;
+  border-radius: 0 0 9px 9px;
+  background: var(--card-ink);
+  box-shadow: 0 6px 14px color-mix(in srgb, var(--card-ink) 18%, transparent);
+  color: #fff9e9;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  line-height: 1;
+}
+
+.recommendation-badge ~ .card-kicker {
+  margin-top: 16px;
+}
+
+.recommendation-tip {
+  position: absolute;
+  z-index: 5;
+  top: 54px;
+  left: clamp(15px, 1.4vw, 22px);
+  display: inline-flex;
+  align-items: center;
+  padding: 7px 10px;
+  border: 1px solid color-mix(in srgb, var(--card-accent) 42%, transparent);
+  border-radius: 8px;
+  background: rgba(255, 253, 247, 0.94);
+  box-shadow: 0 10px 26px rgba(47, 34, 7, 0.13);
+  color: var(--card-ink);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+  animation:
+    recommendationTipIn 320ms cubic-bezier(0.22, 1, 0.36, 1) both,
+    recommendationTipOut 400ms ease 3.32s forwards;
+  pointer-events: none;
+}
+
+.recommendation-tip::before {
+  position: absolute;
+  top: -4px;
+  left: 15px;
+  width: 7px;
+  height: 7px;
+  border-top: 1px solid color-mix(in srgb, var(--card-accent) 42%, transparent);
+  border-left: 1px solid color-mix(in srgb, var(--card-accent) 42%, transparent);
+  background: rgba(255, 253, 247, 0.94);
+  content: '';
+  transform: rotate(45deg);
+}
+
+.card-description-message,
+.journey-end-message {
+  position: absolute;
+  z-index: 6;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 28px;
+  background: rgba(255, 253, 247, 0.9);
+  color: var(--card-ink);
+  font-family: Georgia, "Songti SC", serif;
+  font-size: clamp(18px, 1.6vw, 24px);
+  letter-spacing: -0.02em;
+  line-height: 1.45;
+  text-align: center;
+  animation: cardSelectionMessage 3s ease both;
+  pointer-events: none;
+}
+
+.select-page.is-deck-expanding {
+  overflow: hidden;
+}
+
+.select-page.is-deck-expanding .card-grid {
+  overflow: visible;
+}
+
+.select-page.is-deck-expanding .selection-intro,
+.select-page.is-deck-expanding .selection-footer {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(10px);
+}
+
+.select-page.is-deck-expanding.spread-spreading .selection-intro {
+  opacity: 1;
+  transform: translateY(0);
+  transition:
+    opacity 620ms ease 230ms,
+    transform 760ms cubic-bezier(0.22, 1, 0.36, 1) 230ms;
+}
+
+.select-page.is-deck-expanding.spread-spreading .selection-footer {
+  opacity: 1;
+  transform: translateY(0);
+  transition:
+    opacity 520ms ease 790ms,
+    transform 700ms cubic-bezier(0.22, 1, 0.36, 1) 790ms;
+}
+
+.select-page.is-deck-expanding .choice-card {
+  pointer-events: none;
+}
+
+.select-page.is-deck-expanding .choice-card:not(.is-from-stack) {
+  opacity: 0;
+}
+
+.choice-card.is-from-stack {
+  border-radius: 28px;
+  opacity: 0.98;
+  transform: translate3d(var(--spread-x), var(--spread-y), 0)
+    scale(var(--spread-scale))
+    rotate(var(--spread-rotation));
+  transform-origin: center center;
+  backface-visibility: hidden;
+  contain: paint;
+  transition: none;
+  will-change: transform, opacity;
+}
+
+.select-page.is-deck-expanding.spread-spreading .choice-card.is-from-stack {
+  border-radius: 18px;
+  opacity: 1;
+  transform: translate3d(0, 0, 0) scale(1) rotate(0deg);
+  transition:
+    transform 1120ms cubic-bezier(0.22, 1, 0.36, 1) calc(var(--spread-order) * 65ms),
+    border-radius 820ms ease calc(var(--spread-order) * 65ms),
+    opacity 380ms ease calc(var(--spread-order) * 45ms);
+}
+
+.select-page.is-deck-expanding.spread-spreading .choice-card.is-from-stack.is-selected {
+  transform: translate3d(0, -7px, 0) scale(1) rotate(0deg);
+}
+
+.card-kicker {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: space-between;
+  color: var(--card-ink);
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+.card-art {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  flex: 1;
+  min-height: 115px;
+  place-items: center;
+}
+
+.art-core {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  width: clamp(50px, 5vw, 78px);
+  aspect-ratio: 1;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--card-accent) 72%, black 8%);
+  border-radius: 50%;
+  background: var(--card-accent);
+  color: var(--card-ink);
+  box-shadow: 0 10px 28px color-mix(in srgb, var(--card-accent) 38%, transparent);
+  font-family: Georgia, serif;
+  font-size: 15px;
+}
+
+.art-core::after {
+  position: absolute;
+  inset: 7px;
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  border-radius: inherit;
+  content: '';
+}
+
+.orbit {
+  position: absolute;
+  inset: 0;
+  border: 1px solid color-mix(in srgb, var(--card-accent) 38%, transparent);
+  border-radius: 50%;
+}
+
+.orbit-layer {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  transform-origin: center;
+}
+
+.orbit-layer-large {
+  width: 70%;
+  aspect-ratio: 1;
+}
+
+.orbit-layer-small {
+  width: 46%;
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.orbit-layer-small .orbit {
+  border-radius: 34%;
+}
+
+.spark {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--card-accent);
+}
+
+.orbit-layer .spark {
+  box-shadow: 0 0 7px color-mix(in srgb, var(--card-accent) 28%, transparent);
+}
+
+.spark-one { top: 17%; left: 8%; }
+.spark-two { top: 42%; right: -1px; }
+.spark-three { bottom: -1px; left: 43%; }
+
+.select-page .choice-card.is-selected .orbit-layer-large,
+.use-page .orbit-layer-large {
+  animation: orbitClockwise 18s linear infinite;
+  will-change: transform;
+}
+
+.select-page .choice-card.is-selected .orbit-layer-small,
+.use-page .orbit-layer-small {
+  animation: orbitCounterclockwise 11s linear infinite;
+  will-change: transform;
+}
+
+.select-page .choice-card.is-selected .art-core::after,
+.use-page .art-core::after {
+  border-top-color: rgba(255, 255, 255, 0.24);
+  border-bottom-color: rgba(255, 255, 255, 0.82);
+  animation: coreRingClockwise 7s linear infinite;
+  will-change: transform;
+}
+
+.select-page.is-deck-expanding .choice-card .orbit-layer,
+.select-page.is-deck-expanding .choice-card .art-core::after {
+  animation-play-state: paused;
+}
+
+.choice-card-copy {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.choice-card-copy strong {
+  font-family: Georgia, "Songti SC", serif;
+  font-size: clamp(22px, 2vw, 31px);
+  font-weight: 400;
+  letter-spacing: -0.04em;
+}
+
+.choice-card-copy > span {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.5;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.selection-check {
+  position: absolute;
+  z-index: 2;
+  top: 12px;
+  right: clamp(15px, 1.4vw, 22px);
+  display: grid;
+  width: 20px;
+  height: 20px;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--card-ink);
+  color: #fff;
+  font-size: 10px;
+  opacity: 0;
+  transform: scale(0.7);
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.is-selected .selection-check {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.selection-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: auto;
+  padding: clamp(24px, 4vh, 42px) 0;
+}
+
+.selected-summary {
+  display: grid;
+  grid-template-columns: auto auto auto;
+  align-items: baseline;
+  gap: 12px;
+  font-size: 12px;
+}
+
+.selected-summary > span:first-child {
+  color: var(--muted);
+}
+
+.selected-summary strong {
+  font-size: 17px;
+}
+
+.summary-description {
+  color: var(--muted);
+}
+
+.primary-button {
+  display: inline-flex;
+  min-width: 170px;
+  height: 50px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 30px;
+  padding: 0 20px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--ink);
+  color: #fff;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+  transition: opacity 150ms ease, transform 150ms ease;
+}
+
+.primary-button:hover {
+  transform: translateY(-2px);
+}
+
+.primary-button:disabled {
+  cursor: default;
+  opacity: 0.46;
+  transform: none;
+}
+
+.use-page {
+  padding: 0 4vw;
+  background:
+    radial-gradient(circle at 18% 64%, var(--card-soft), transparent 30%),
+    radial-gradient(circle at 78% 20%, var(--card-soft), transparent 27%),
+    var(--paper);
+}
+
+.use-topbar {
+  grid-template-columns: 1fr auto 1fr;
+}
+
+.text-button {
+  justify-self: start;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.text-button span {
+  margin-right: 7px;
+}
+
+.use-stage {
+  display: grid;
+  grid-template-columns: minmax(300px, 430px) minmax(280px, 440px);
+  min-height: calc(100svh - 73px);
+  align-items: center;
+  justify-content: center;
+  gap: clamp(70px, 10vw, 160px);
+  padding: 50px 0;
+}
+
+.active-card {
+  position: relative;
+  aspect-ratio: 0.68;
+  padding: 10px;
+  border-radius: 28px;
+  background: rgba(255, 255, 255, 0.42);
+  box-shadow: 0 28px 80px rgba(23, 24, 21, 0.16);
+  transition: transform 500ms ease, box-shadow 500ms ease;
+}
+
+.active-card::after {
+  position: absolute;
+  inset: -20px;
+  z-index: -1;
+  border-radius: 40px;
+  background: var(--card-accent);
+  content: '';
+  filter: blur(60px);
+  opacity: 0.12;
+  transition: opacity 500ms ease;
+}
+
+.active-card.is-used {
+  box-shadow: 0 35px 100px color-mix(in srgb, var(--card-accent) 22%, transparent);
+  transform: translateY(-8px) rotate(-1deg);
+}
+
+.active-card.is-used::after {
+  opacity: 0.32;
+}
+
+.active-card-inner {
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+  padding: clamp(24px, 3vw, 38px);
+  border: 1px solid color-mix(in srgb, var(--card-accent) 60%, transparent);
+  border-radius: 21px;
+  background: var(--card-soft);
+}
+
+.active-card .card-art {
+  min-height: 230px;
+}
+
+.active-card .art-core {
+  width: clamp(90px, 9vw, 128px);
+  font-size: 22px;
+}
+
+.active-card-copy h1 {
+  margin: 0 0 10px;
+  font-family: Georgia, "Songti SC", serif;
+  font-size: clamp(42px, 5vw, 70px);
+  font-weight: 400;
+  letter-spacing: -0.055em;
+  line-height: 1;
+}
+
+.active-card-copy p {
+  margin: 0;
+  color: var(--card-ink);
+  font-size: 13px;
+}
+
+.use-copy h2 {
+  max-width: 420px;
+  margin: 18px 0 20px;
+  font-family: Georgia, "Songti SC", serif;
+  font-size: clamp(36px, 4.2vw, 64px);
+  font-weight: 400;
+  letter-spacing: -0.055em;
+  line-height: 1.05;
+}
+
+.use-copy p {
+  max-width: 370px;
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.8;
+}
+
+.use-button {
+  min-width: 210px;
+  margin-top: 42px;
+  background: var(--card-ink);
+}
+
+.use-page.is-landing-arrival .use-topbar {
+  animation: useChromeIn 460ms 40ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.use-page.is-landing-arrival .use-copy {
+  animation: useCopyIn 560ms 100ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.journey-page {
+  position: relative;
+  display: grid;
+  width: 100%;
+  height: 100svh;
+  min-height: 420px;
+  overflow: hidden;
+  place-items: center;
+  background: #090a08;
+  color: #f7f3e9;
+  isolation: isolate;
+}
+
+.journey-ambient {
+  position: absolute;
+  inset: -25%;
+  z-index: -1;
+  background:
+    radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--card-accent) 24%, transparent), transparent 22%),
+    radial-gradient(circle at 28% 64%, color-mix(in srgb, var(--card-accent) 9%, transparent), transparent 28%),
+    radial-gradient(circle at 72% 28%, color-mix(in srgb, var(--card-accent) 7%, transparent), transparent 24%);
+  filter: blur(18px);
+  animation: ambientBreathe 4s ease-in-out infinite alternate;
+}
+
+.journey-words {
+  position: absolute;
+  z-index: 4;
+  display: grid;
+  width: 100%;
+  height: 100%;
+  padding: 32px;
+  place-items: center;
+  text-align: center;
+  animation: journeyWordsIn 1s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.journey-words p {
+  margin: 0;
+  font-family: Georgia, "Songti SC", serif;
+  font-size: clamp(28px, 4vw, 60px);
+  font-weight: 400;
+  letter-spacing: -0.04em;
+  line-height: 1.3;
+}
+
+.journey-words strong {
+  color: color-mix(in srgb, var(--card-accent) 76%, white);
+  font-weight: 400;
+  text-shadow: 0 0 32px color-mix(in srgb, var(--card-accent) 70%, transparent);
+}
+
+.journey-lights .journey-words {
+  pointer-events: none;
+  animation: journeyWordsOut 700ms cubic-bezier(0.65, 0, 0.35, 1) forwards;
+}
+
+.light-tunnel {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  perspective: 800px;
+  transform: scale(0.82);
+  transition: opacity 700ms ease, transform 3.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.journey-lights .light-tunnel {
+  opacity: 1;
+  transform: scale(1.08);
+}
+
+.tunnel-core {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(
+      circle at 50% 50%,
+      #fff 0,
+      #fff 1.2%,
+      color-mix(in srgb, var(--card-accent) 20%, white) 4.5%,
+      color-mix(in srgb, var(--card-accent) 58%, transparent) 12%,
+      transparent 36%
+    );
+  background-color: transparent;
+  clip-path: circle(0 at 50% 50%);
+  opacity: 0;
+  will-change: clip-path, opacity, background-color;
+  animation: coreApproach 3.4s cubic-bezier(0.55, 0, 0.35, 1) forwards;
+  animation-play-state: paused;
+}
+
+.journey-lights .tunnel-core,
+.journey-lights .tunnel-ring,
+.journey-lights .light-particle {
+  animation-play-state: running;
+}
+
+.tunnel-ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 12vmin;
+  height: 12vmin;
+  border: 1px solid color-mix(in srgb, var(--card-accent) 45%, transparent);
+  border-radius: 50%;
+  box-shadow: 0 0 24px color-mix(in srgb, var(--card-accent) 18%, transparent);
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.15);
+  animation: tunnelRing 2.2s ease-out infinite;
+  animation-play-state: paused;
+}
+
+.tunnel-ring-two { animation-delay: -0.72s; }
+.tunnel-ring-three { animation-delay: -1.44s; }
+
+.light-particle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: var(--particle-size);
+  height: var(--particle-size);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--card-accent) 45%, white);
+  box-shadow:
+    0 0 7px 2px color-mix(in srgb, var(--card-accent) 60%, transparent),
+    0 0 14px color-mix(in srgb, var(--card-accent) 28%, transparent);
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.05);
+  animation: particleRush var(--particle-duration) linear var(--particle-delay) infinite;
+  animation-play-state: paused;
+}
+
+.skip-journey {
+  position: absolute;
+  right: 4vw;
+  bottom: max(28px, env(safe-area-inset-bottom));
+  z-index: 8;
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 0;
+  border: 0;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.58);
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  transition: color 180ms ease;
+}
+
+.skip-journey:hover {
+  color: #fff;
+}
+
+.deck-page {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  padding: 0 4vw;
+  background:
+    radial-gradient(circle at 50% 44%, color-mix(in srgb, var(--card-accent) 8%, transparent), transparent 31%),
+    radial-gradient(circle at 8% 88%, color-mix(in srgb, var(--card-accent) 5%, transparent), transparent 26%),
+    linear-gradient(145deg, #0d100f 0%, #080a09 48%, #050706 100%);
+  color: #f2f0e9;
+  transition: --card-accent 520ms ease, background-color 500ms ease, color 500ms ease;
+}
+
+.deck-page::before {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.014) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.012) 1px, transparent 1px);
+  background-size: 88px 88px;
+  content: '';
+  mask-image: radial-gradient(circle at center, black, transparent 78%);
+  opacity: 0.44;
+  pointer-events: none;
+}
+
+.deck-atmosphere {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.deck-ambient-glow {
+  position: absolute;
+  top: 42%;
+  left: 50%;
+  width: min(74vw, 980px);
+  aspect-ratio: 1.55;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--card-accent) 12%, transparent);
+  filter: blur(110px);
+  opacity: 0.58;
+  transform: translate(-50%, -50%);
+  animation: deckGlowBreathe 9s ease-in-out infinite alternate;
+}
+
+.deck-mote {
+  position: absolute;
+  width: var(--mote-size);
+  height: var(--mote-size);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--card-accent) 58%, white);
+  box-shadow:
+    0 0 7px color-mix(in srgb, var(--card-accent) 60%, transparent),
+    0 0 20px color-mix(in srgb, var(--card-accent) 24%, transparent);
+  filter: blur(var(--mote-blur));
+  opacity: var(--mote-opacity);
+  animation: deckMoteDrift var(--mote-duration) ease-in-out var(--mote-delay) infinite alternate;
+  will-change: transform, opacity;
+}
+
+.deck-topbar {
+  border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+.deck-topbar .text-button,
+.deck-topbar .brand-mark {
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.deck-topbar .step-label {
+  color: rgba(255, 255, 255, 0.42);
+}
+
+.deck-topbar .brand-dot {
+  background: color-mix(in srgb, var(--card-accent) 72%, white);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--card-accent) 14%, transparent);
+}
+
+.deck-stage {
+  position: relative;
+  display: block;
+  flex: 1;
+  min-height: 0;
+  padding: clamp(28px, 4.5vh, 50px) 0 clamp(18px, 3vh, 32px);
+}
+
+.deck-card-slot {
+  position: absolute;
+  top: 50%;
+  left: 32%;
+  width: min(390px, calc((100svh - 190px) * 0.68));
+  transform: translate(-50%, -50%);
+  transition:
+    left 900ms cubic-bezier(0.22, 1, 0.36, 1),
+    width 900ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: left, width;
+}
+
+.deck-layout-focused .deck-card-slot {
+  left: 16%;
+  width: min(235px, calc((100svh - 220px) * 0.43));
+}
+
+.deck-reading-card {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 0.68;
+  justify-self: center;
+  padding: 9px;
+  border: 1px solid color-mix(in srgb, var(--card-accent) 30%, rgba(255, 255, 255, 0.12));
+  border-radius: 28px;
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow:
+    0 34px 90px rgba(0, 0, 0, 0.46),
+    0 0 70px color-mix(in srgb, var(--card-accent) 18%, transparent);
+  animation:
+    deckCardReveal 560ms cubic-bezier(0.22, 1, 0.36, 1) both,
+    deckCardFloat 5s ease-in-out 560ms infinite;
+  will-change: transform;
+}
+
+.deck-reading-card::after {
+  position: absolute;
+  inset: -22px;
+  z-index: -1;
+  border-radius: 42px;
+  background: var(--card-accent);
+  content: '';
+  filter: blur(72px);
+  opacity: 0.13;
+}
+
+.deck-reading-inner {
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+  padding: clamp(24px, 2.7vw, 36px);
+  border: 1px solid color-mix(in srgb, var(--card-accent) 62%, transparent);
+  border-radius: 20px;
+  background:
+    radial-gradient(circle at 50% 36%, rgba(255, 255, 255, 0.52), transparent 45%),
+    var(--card-soft);
+  color: var(--card-ink);
+  transition: padding 900ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.deck-layout-focused .deck-reading-inner {
+  padding: 18px;
+}
+
+.deck-reading-card .card-art {
+  min-height: 220px;
+  transition: min-height 900ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.deck-reading-card .art-core {
+  width: clamp(86px, 8vw, 120px);
+  font-size: 21px;
+  transition: width 900ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.deck-reading-card .active-card-copy h1 {
+  margin-bottom: 9px;
+  font-size: clamp(42px, 4.7vw, 64px);
+  transition: font-size 900ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.deck-layout-focused .deck-reading-card .card-art {
+  min-height: 112px;
+}
+
+.deck-layout-focused .deck-reading-card .art-core {
+  width: 68px;
+  font-size: 15px;
+}
+
+.deck-layout-focused .deck-reading-card .active-card-copy h1 {
+  margin-bottom: 0;
+  font-size: 30px;
+  white-space: nowrap;
+}
+
+.deck-reading-card .active-card-copy p {
+  color: var(--card-ink);
+}
+
+.deck-card-prompt {
+  display: none;
+}
+
+.deck-actions {
+  position: absolute;
+  top: 50%;
+  left: 66%;
+  display: flex;
+  width: min(42vw, 440px);
+  height: min(680px, calc(100svh - 190px));
+  min-height: 440px;
+  flex-direction: column;
+  align-items: flex-start;
+  transform: translate(-50%, -50%);
+  transition:
+    left 900ms cubic-bezier(0.22, 1, 0.36, 1),
+    width 900ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: left, width;
+}
+
+.deck-layout-focused .deck-actions {
+  left: 50%;
+  width: min(52vw, 560px);
+}
+
+.deck-guidance .eyebrow {
+  margin-bottom: 16px;
+  color: color-mix(in srgb, var(--card-accent) 72%, white);
+}
+
+.deck-guidance h2 {
+  margin: 0 0 18px;
+  font-family: Georgia, "Songti SC", serif;
+  font-size: clamp(34px, 3.5vw, 52px);
+  font-weight: 400;
+  letter-spacing: -0.055em;
+  line-height: 1.08;
+}
+
+.deck-guidance .deck-prompt {
+  max-width: 100%;
+  font-size: clamp(25px, 2.35vw, 34px);
+  letter-spacing: -0.035em;
+  line-height: 1.5;
+}
+
+.deck-layout-focused .deck-guidance .deck-prompt {
+  font-size: clamp(30px, 2.9vw, 44px);
+}
+
+.deck-guidance p {
+  max-width: 310px;
+  margin: 0;
+  color: rgba(255, 255, 255, 0.46);
+  font-size: 12px;
+  line-height: 1.75;
+}
+
+.deck-exchange-button,
+.deck-next-button,
+.deck-skip-button,
+.deck-footer button {
+  appearance: none;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.deck-exchange-button {
+  display: inline-flex;
+  height: 44px;
+  align-items: center;
+  gap: 11px;
+  margin-top: 27px;
+  padding: 0 20px;
+  border: 1px solid rgba(255, 255, 255, 0.34);
+  border-radius: 999px;
+  background: rgba(178, 182, 178, 0.035);
+  color: rgba(255, 255, 255, 0.74);
+  font-size: 11px;
+  transition: background 180ms ease, border-color 180ms ease, color 180ms ease, transform 180ms ease;
+}
+
+.deck-exchange-button span {
+  font-size: 16px;
+  font-weight: 400;
+}
+
+.deck-exchange-button:hover {
+  border-color: rgba(255, 255, 255, 0.58);
+  background: rgba(178, 182, 178, 0.08);
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+.deck-progress {
+  display: flex;
+  width: 100%;
+  gap: 7px;
+  margin-top: auto;
+  margin-bottom: 18px;
+}
+
+.deck-progress span {
+  width: 21px;
+  height: 2px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.15);
+  transition: width 240ms ease, background 240ms ease;
+}
+
+.deck-progress span.is-current {
+  width: 42px;
+  background: color-mix(in srgb, var(--card-accent) 80%, white);
+}
+
+.deck-forward-actions {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.deck-next-button,
+.deck-skip-button {
+  display: inline-flex;
+  align-items: center;
+  border: 0;
+  border-radius: 999px;
+  transition: filter 180ms ease, transform 180ms ease;
+}
+
+.deck-next-button {
+  width: min(100%, 220px);
+  height: 54px;
+  justify-content: space-between;
+  padding: 0 22px;
+  background: var(--card-accent);
+  box-shadow: 0 10px 30px color-mix(in srgb, var(--card-accent) 18%, transparent);
+  color: var(--card-ink);
+  font-size: 12px;
+}
+
+.deck-skip-button {
+  width: min(92%, 202px);
+  height: 48px;
+  justify-content: center;
+  background: #575b58;
+  color: rgba(255, 255, 255, 0.86);
+  font-size: 11px;
+}
+
+.deck-next-button:hover,
+.deck-skip-button:hover {
+  filter: brightness(1.08);
+  transform: translateY(-2px);
+}
+
+.deck-action-note {
+  align-self: center;
+  min-height: 14px;
+  margin: 13px 0 0;
+  color: rgba(255, 255, 255, 0.34);
+  font-size: 10px;
+  text-align: center;
+}
+
+.deck-footer {
+  display: flex;
+  flex: none;
+  justify-content: center;
+  padding: 2px 0 max(18px, env(safe-area-inset-bottom));
+}
+
+.deck-footer button {
+  padding: 10px 14px;
+  border: 0;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.3);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  transition: color 180ms ease;
+}
+
+.deck-footer button:hover {
+  color: rgba(255, 255, 255, 0.58);
+}
+
+@keyframes journeyWordsIn {
+  from { opacity: 0; filter: blur(13px); transform: translateY(12px) scale(0.98); }
+  to { opacity: 1; filter: blur(0); transform: translateY(0) scale(1); }
+}
+
+@keyframes landingDeckIn {
+  from { opacity: 0; transform: translateY(24px) scale(0.965); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes landingHintIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes useChromeIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes useCopyIn {
+  from { opacity: 0; filter: blur(5px); transform: translateX(16px); }
+  to { opacity: 1; filter: blur(0); transform: translateX(0); }
+}
+
+@keyframes recommendationTipIn {
+  from { opacity: 0; transform: translateY(-5px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes recommendationTipOut {
+  from { opacity: 1; transform: translateY(0) scale(1); }
+  to { opacity: 0; transform: translateY(-3px) scale(0.98); }
+}
+
+@keyframes cardSelectionMessage {
+  0% { opacity: 0; filter: blur(8px); transform: scale(0.97); }
+  12%, 82% { opacity: 1; filter: blur(0); transform: scale(1); }
+  100% { opacity: 0; filter: blur(6px); transform: scale(1.02); }
+}
+
+@keyframes orbitClockwise {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+@keyframes orbitCounterclockwise {
+  from { transform: translate(-50%, -50%) rotate(45deg); }
+  to { transform: translate(-50%, -50%) rotate(-315deg); }
+}
+
+@keyframes coreRingClockwise {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes journeyWordsOut {
+  from { opacity: 1; filter: blur(0); transform: scale(1); }
+  to { opacity: 0; filter: blur(14px); transform: scale(1.1); }
+}
+
+@keyframes ambientBreathe {
+  from { opacity: 0.68; transform: scale(0.94) rotate(-2deg); }
+  to { opacity: 1; transform: scale(1.06) rotate(2deg); }
+}
+
+@keyframes particleRush {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.03); }
+  16% { opacity: 0.95; }
+  76% { opacity: 0.75; }
+  100% { opacity: 0; transform: translate(calc(-50% + var(--particle-x)), calc(-50% + var(--particle-y))) scale(3.4); }
+}
+
+@keyframes tunnelRing {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.12); }
+  24% { opacity: 0.75; }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(8); }
+}
+
+@keyframes coreApproach {
+  0%, 56% {
+    clip-path: circle(0.35% at 50% 50%);
+    opacity: 0.58;
+    background-color: rgba(255, 255, 255, 0);
+  }
+  78% {
+    clip-path: circle(20% at 50% 50%);
+    opacity: 1;
+    background-color: rgba(255, 255, 255, 0);
+  }
+  94% {
+    clip-path: circle(72% at 50% 50%);
+    opacity: 1;
+    background-color: rgba(255, 255, 255, 0.82);
+  }
+  100% {
+    clip-path: circle(100% at 50% 50%);
+    opacity: 1;
+    background-color: #fff;
+  }
+}
+
+@keyframes deckGlowBreathe {
+  from { opacity: 0.42; transform: translate(-50%, -50%) scale(0.92); }
+  to { opacity: 0.68; transform: translate(-50%, -50%) scale(1.08); }
+}
+
+@keyframes deckMoteDrift {
+  0% {
+    opacity: calc(var(--mote-opacity) * 0.58);
+    transform: translate3d(0, 0, 0) scale(0.8);
+  }
+  52% {
+    opacity: var(--mote-opacity);
+  }
+  100% {
+    opacity: calc(var(--mote-opacity) * 0.72);
+    transform: translate3d(var(--mote-x), var(--mote-y), 0) scale(1.16);
+  }
+}
+
+@keyframes deckCardReveal {
+  from { opacity: 0; transform: translateY(24px) scale(0.975) rotate(-0.8deg); }
+  to { opacity: 1; transform: translateY(0) scale(1) rotate(0); }
+}
+
+@keyframes deckCardFloat {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(0, -6px, 0); }
+}
+
+@media (min-width: 721px) {
+  .use-page {
+    height: 100svh;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .use-stage {
+    height: calc(100svh - 73px);
+    min-height: 0;
+    padding: clamp(24px, 5vh, 50px) 0;
+  }
+
+  .active-card {
+    width: min(100%, 430px, calc(68svh - 97px));
+    justify-self: center;
+  }
+}
+
+@media (max-width: 980px) {
+  .topbar > p {
+    display: none;
+  }
+
+  .topbar {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .use-topbar {
+    grid-template-columns: 1fr auto 1fr;
+  }
+
+  .card-grid {
+    grid-template-columns: repeat(5, minmax(180px, 1fr));
+    overflow-x: auto;
+    padding: 8px 4px 26px;
+    scrollbar-width: thin;
+    scroll-snap-type: x proximity;
+  }
+
+  .choice-card {
+    scroll-snap-align: start;
+  }
+
+  .use-stage {
+    gap: 60px;
+  }
+
+  .deck-card-slot {
+    left: 30%;
+    width: min(350px, calc((100svh - 190px) * 0.68));
+  }
+
+  .deck-layout-focused .deck-card-slot {
+    left: 15%;
+    width: min(210px, calc((100svh - 220px) * 0.43));
+  }
+
+  .deck-actions {
+    left: 68%;
+    width: min(38vw, 320px);
+  }
+
+  .deck-layout-focused .deck-actions {
+    left: 52%;
+    width: min(55vw, 500px);
+  }
+}
+
+@media (max-width: 720px) {
+  .landing-page,
+  .select-page {
+    height: 100svh;
+    min-height: 0;
+    overflow: hidden;
+    padding-right: 16px;
+    padding-left: 16px;
+  }
+
+  .landing-page::before {
+    inset: 56px 0 0;
+    background-size: 64px 64px;
+  }
+
+  .landing-stage {
+    padding: clamp(38px, 7svh, 58px) 0 clamp(26px, 5svh, 42px);
+  }
+
+  .landing-card-stack {
+    width: min(72vw, 286px, calc((100svh - 174px) * 0.68));
+    min-width: 218px;
+  }
+
+  .landing-stack-card {
+    border-radius: 23px;
+    transform: translate(
+      calc(var(--stack-depth) * 6px),
+      calc(var(--stack-depth) * -7px)
+    ) rotate(calc(var(--stack-depth) * 0.4deg));
+  }
+
+  .landing-stack-card::before {
+    border-radius: 16px;
+  }
+
+  .landing-card-stack.is-holding .landing-stack-card {
+    transform: translate(
+      calc(var(--stack-depth) * 4.5px),
+      calc(var(--stack-depth) * -5px)
+    ) rotate(calc(var(--stack-depth) * 0.24deg));
+  }
+
+  .landing-card-stack.is-gathering .landing-stack-card {
+    transform: translate(
+      calc(var(--stack-depth) * 1.5px),
+      calc(var(--stack-depth) * -1.5px)
+    ) rotate(calc(var(--stack-depth) * 0.08deg));
+  }
+
+  .landing-card-stack .landing-front-card {
+    padding: 7px;
+    border-radius: 23px;
+  }
+
+  .landing-card-stack .landing-front-inner {
+    padding: clamp(18px, 5vw, 23px);
+    border-radius: 17px;
+  }
+
+  .landing-front-card .card-art {
+    min-height: 0;
+  }
+
+  .landing-front-card .art-core {
+    width: clamp(72px, 20vw, 86px);
+    font-size: 18px;
+  }
+
+  .landing-front-card .active-card-copy h1 {
+    font-size: clamp(36px, 11vw, 46px);
+  }
+
+  .landing-hint {
+    margin-top: clamp(28px, 4.5svh, 38px);
+  }
+
+  .use-page {
+    padding-right: 16px;
+    padding-left: 16px;
+  }
+
+  .deck-page {
+    min-height: 100svh;
+    padding-right: 16px;
+    padding-left: 16px;
+  }
+
+  .topbar {
+    min-height: 56px;
+  }
+
+  .selection-intro {
+    display: block;
+    flex: none;
+    padding: clamp(20px, 4svh, 32px) 0 clamp(14px, 2.5svh, 22px);
+  }
+
+  .selection-copy {
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+
+  .selection-intro h1 {
+    font-size: clamp(32px, 9vw, 38px);
+    line-height: 1.08;
+  }
+
+  .card-grid {
+    flex: 1;
+    min-height: 0;
+    grid-auto-columns: min(80vw, clamp(218px, calc((100svh - 250px) * 0.68), 310px));
+    grid-auto-flow: column;
+    grid-template-columns: none;
+    align-items: center;
+    gap: 12px;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    padding: 10px 2px 18px;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    touch-action: pan-x;
+  }
+
+  .card-grid::-webkit-scrollbar {
+    display: none;
+  }
+
+  .choice-card {
+    height: auto;
+    padding: 18px;
+    border-radius: 20px;
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+  }
+
+  .recommendation-badge,
+  .recommendation-tip {
+    left: 18px;
+  }
+
+  .choice-card.is-from-stack {
+    border-radius: 23px;
+  }
+
+  .select-page.is-deck-expanding.spread-spreading .choice-card.is-from-stack {
+    border-radius: 20px;
+  }
+
+  .select-page.is-deck-expanding.spread-spreading .choice-card.is-from-stack.is-selected {
+    transform: translate3d(0, -4px, 0) scale(1) rotate(0deg);
+  }
+
+  .choice-card.is-selected {
+    transform: translateY(-4px);
+  }
+
+  .choice-card .art-core {
+    width: clamp(62px, 19vw, 76px);
+  }
+
+  .choice-card-copy strong {
+    font-size: clamp(27px, 8vw, 31px);
+  }
+
+  .choice-card-copy > span {
+    font-size: 12px;
+  }
+
+  .selection-check {
+    right: 18px;
+  }
+
+  .selection-footer {
+    position: relative;
+    flex: none;
+    margin-top: 0;
+    gap: 12px;
+    padding: 12px 0 max(12px, env(safe-area-inset-bottom));
+    border-top: 1px solid var(--line);
+    background: var(--paper);
+  }
+
+  .selected-summary {
+    grid-template-columns: auto auto;
+    gap: 8px;
+  }
+
+  .summary-description {
+    display: none;
+  }
+
+  .primary-button {
+    min-width: 146px;
+    height: 48px;
+    gap: 16px;
+    padding-right: 18px;
+    padding-left: 18px;
+  }
+
+  .brand-mark {
+    display: none;
+  }
+
+  .use-topbar {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .use-stage {
+    grid-template-columns: minmax(0, 1fr);
+    min-height: calc(100svh - 56px);
+    align-content: center;
+    gap: clamp(18px, 3svh, 26px);
+    padding: clamp(18px, 3svh, 28px) 0 max(24px, env(safe-area-inset-bottom));
+  }
+
+  .active-card {
+    width: min(62vw, clamp(210px, calc((100svh - 310px) * 0.68), 250px));
+    padding: 7px;
+    border-radius: 22px;
+    justify-self: center;
+  }
+
+  .active-card-inner {
+    padding: clamp(16px, 4.5vw, 20px);
+    border-radius: 16px;
+  }
+
+  .active-card .card-art {
+    min-height: 0;
+  }
+
+  .active-card .art-core {
+    width: clamp(66px, 18vw, 78px);
+    font-size: 17px;
+  }
+
+  .active-card-copy h1 {
+    margin-bottom: 6px;
+    font-size: clamp(30px, 9vw, 38px);
+  }
+
+  .active-card-copy p {
+    font-size: 12px;
+  }
+
+  .use-copy {
+    width: 100%;
+    text-align: center;
+  }
+
+  .use-copy h2 {
+    max-width: 340px;
+    margin: 10px auto;
+    font-size: clamp(29px, 8vw, 36px);
+    line-height: 1.08;
+  }
+
+  .use-copy p {
+    max-width: 340px;
+    margin-right: auto;
+    margin-left: auto;
+    font-size: 12px;
+    line-height: 1.6;
+  }
+
+  .use-button {
+    width: 100%;
+    max-width: 340px;
+    min-width: 0;
+    margin: 18px auto 0;
+  }
+
+  .journey-words {
+    padding: 24px;
+  }
+
+  .journey-words p {
+    font-size: clamp(27px, 8.5vw, 38px);
+  }
+
+  .skip-journey {
+    right: 20px;
+  }
+
+  .deck-stage {
+    position: static;
+    display: grid;
+    flex: none;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 20px;
+    padding: 30px 0 24px;
+  }
+
+  .deck-card-slot,
+  .deck-layout-focused .deck-card-slot {
+    position: relative;
+    top: auto;
+    left: auto;
+    width: min(76vw, 280px);
+    justify-self: center;
+    transform: none;
+  }
+
+  .deck-reading-card {
+    width: 100%;
+  }
+
+  .deck-reading-inner {
+    padding: 20px;
+    border-radius: 17px;
+  }
+
+  .deck-reading-card .card-art,
+  .deck-reading-card .active-card-copy,
+  .deck-layout-focused .deck-reading-card .card-art,
+  .deck-layout-focused .deck-reading-card .active-card-copy {
+    display: none;
+  }
+
+  .deck-card-prompt {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    padding: clamp(18px, 5svh, 34px) 2px;
+    font-family: Georgia, "Songti SC", serif;
+    font-size: clamp(21px, 6.4vw, 28px);
+    font-weight: 400;
+    letter-spacing: -0.025em;
+    line-height: 1.65;
+    text-align: left;
+  }
+
+  .deck-reading-card .card-art {
+    min-height: 160px;
+  }
+
+  .deck-reading-card .art-core {
+    width: clamp(72px, 21vw, 88px);
+    font-size: 18px;
+  }
+
+  .deck-reading-card .active-card-copy h1 {
+    font-size: clamp(34px, 11vw, 44px);
+  }
+
+  .deck-actions {
+    position: relative;
+    top: auto;
+    left: auto;
+    width: min(100%, 360px);
+    height: auto;
+    min-height: 0;
+    align-items: center;
+    justify-self: center;
+    text-align: center;
+    transform: none;
+  }
+
+  .deck-guidance {
+    display: none;
+  }
+
+  .deck-layout-focused .deck-actions {
+    left: auto;
+    width: min(100%, 360px);
+  }
+
+  .deck-layout-focused .deck-guidance .deck-prompt {
+    font-size: clamp(34px, 10vw, 44px);
+  }
+
+  .deck-layout-focused .deck-reading-inner {
+    padding: 20px;
+  }
+
+  .deck-layout-focused .deck-reading-card .card-art {
+    min-height: 160px;
+  }
+
+  .deck-layout-focused .deck-reading-card .art-core {
+    width: clamp(72px, 21vw, 88px);
+    font-size: 18px;
+  }
+
+  .deck-layout-focused .deck-reading-card .active-card-copy h1 {
+    font-size: clamp(34px, 11vw, 44px);
+    white-space: normal;
+  }
+
+  .deck-guidance h2 {
+    font-size: clamp(34px, 10vw, 44px);
+  }
+
+  .deck-guidance p {
+    max-width: 330px;
+  }
+
+  .deck-exchange-button {
+    margin-top: 0;
+  }
+
+  .deck-progress {
+    justify-content: center;
+    margin-top: 24px;
+  }
+
+  .deck-forward-actions {
+    align-items: center;
+  }
+
+  .deck-action-note {
+    margin-top: 12px;
+  }
+
+  .deck-footer {
+    padding-top: 4px;
+    padding-bottom: max(20px, env(safe-area-inset-bottom));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .journey-ambient,
+  .journey-words,
+  .journey-lights .journey-words,
+  .landing-card-stack,
+  .landing-hint,
+  .use-page.is-landing-arrival .use-topbar,
+  .use-page.is-landing-arrival .use-copy,
+  .select-page .choice-card.is-selected .orbit-layer,
+  .use-page .orbit-layer,
+  .select-page .choice-card.is-selected .art-core::after,
+  .use-page .art-core::after,
+  .tunnel-core,
+  .tunnel-ring,
+  .light-particle,
+  .deck-ambient-glow,
+  .deck-mote,
+  .deck-reading-card {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

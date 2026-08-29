@@ -1,0 +1,16 @@
+node_modules/
+dist/
+.vite/
+*.tsbuildinfo
+
+.env
+.env.*
+!.env.example
+
+*.log
+.DS_Store
+Thumbs.db
+
+# Unrelated local survey assets kept outside the card app source
+/questionnaire-qr-code.png
+/xiaohongshu-survey*.png
