@@ -1552,6 +1552,22 @@ a.contact-value:hover {
   will-change: transform, opacity, filter;
 }
 
+.deck-card-flipper {
+  position: absolute;
+  inset: 9px;
+  transform-style: preserve-3d;
+}
+
+.deck-card-face {
+  height: 100%;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.deck-card-back {
+  display: none;
+}
+
 .deck-layout-showcase .deck-reading-card {
   animation: deckCardApproach 1400ms cubic-bezier(0.16, 0.84, 0.28, 1) both;
 }
@@ -2548,6 +2564,30 @@ a.contact-value:hover {
 
   .deck-reading-card {
     width: 100%;
+    perspective: 1200px;
+  }
+
+  .deck-card-flipper {
+    transition: transform 920ms cubic-bezier(0.22, 0.74, 0.18, 1);
+    will-change: transform;
+  }
+
+  .deck-reading-card.is-back-visible .deck-card-flipper {
+    transform: rotateY(180deg);
+  }
+
+  .deck-card-face {
+    position: absolute;
+    inset: 0;
+  }
+
+  .deck-card-front {
+    transform: rotateY(0deg);
+  }
+
+  .deck-card-back {
+    display: block;
+    transform: rotateY(180deg);
   }
 
   .deck-reading-inner {
@@ -2555,10 +2595,22 @@ a.contact-value:hover {
     border-radius: 17px;
   }
 
-  .deck-reading-card .card-art,
-  .deck-reading-card .active-card-copy,
-  .deck-layout-focused .deck-reading-card .card-art,
-  .deck-layout-focused .deck-reading-card .active-card-copy {
+  .deck-card-front .card-art {
+    display: grid;
+  }
+
+  .deck-card-front .active-card-copy {
+    display: block;
+  }
+
+  .deck-card-front .deck-reading-inner {
+    background:
+      radial-gradient(circle at 50% 36%, rgba(255, 255, 255, 0.62), transparent 48%),
+      var(--card-soft);
+  }
+
+  .deck-card-back .card-art,
+  .deck-card-back .active-card-copy {
     display: none;
   }
 
@@ -2588,9 +2640,9 @@ a.contact-value:hover {
     inset: 0;
   }
 
-  .deck-prompt-line.is-revealed {
+  .deck-card-back .deck-prompt-line.is-revealed {
     animation-duration: 1240ms;
-    animation-delay: calc(220ms + var(--prompt-line-index) * 880ms);
+    animation-delay: calc(540ms + var(--prompt-line-index) * 880ms);
   }
 
   .deck-card-prompt-lead,

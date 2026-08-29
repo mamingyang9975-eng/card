@@ -1099,6 +1099,70 @@ function JourneyExit({ onComplete }: { onComplete: () => void }) {
   );
 }
 
+function DeckReadingCard({ card, group }: { card: Card; group: Card }) {
+  const usesPortraitFlip = window.matchMedia('(max-width: 720px)').matches;
+  const [isBackVisible, setIsBackVisible] = useState(() => (
+    !usesPortraitFlip
+  ));
+  const promptParts = splitCardPrompt(card.description);
+
+  useEffect(() => {
+    const isPortraitLayout = window.matchMedia('(max-width: 720px)').matches;
+
+    if (!isPortraitLayout) {
+      setIsBackVisible(true);
+      return undefined;
+    }
+
+    setIsBackVisible(false);
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const flipTimer = window.setTimeout(() => setIsBackVisible(true), reduceMotion ? 650 : 1250);
+
+    return () => window.clearTimeout(flipTimer);
+  }, [card.id]);
+
+  return (
+    <article
+      className={`deck-reading-card ${isBackVisible ? 'is-back-visible' : 'is-front-visible'}`}
+      style={deckCardStyle(card, group)}
+      aria-label={`${card.name}卡牌`}
+    >
+      <div className="deck-card-flipper">
+        <div
+          className="deck-card-face deck-card-front"
+          aria-hidden={usesPortraitFlip && isBackVisible}
+        >
+          <div className="deck-reading-inner">
+            <div className="card-kicker">
+              <span>{card.index}</span>
+              <span>{card.subtitle}</span>
+            </div>
+            <CardArtwork card={card} />
+            <div className="active-card-copy">
+              <h1>{card.name}</h1>
+            </div>
+          </div>
+        </div>
+
+        <div
+          className="deck-card-face deck-card-back"
+          aria-hidden={!usesPortraitFlip || !isBackVisible}
+        >
+          <div className="deck-reading-inner">
+            <div className="card-kicker">
+              <span>{card.index}</span>
+              <span>{card.subtitle}</span>
+            </div>
+            <div className="deck-card-prompt">
+              <ProgressiveCardPrompt parts={promptParts} revealed={isBackVisible} />
+            </div>
+          </div>
+        </div>
+      </div>
+    </article>
+  );
+}
+
 function Deck({ card, onReturn }: { card: Card; onReturn: () => void }) {
   const initialGroupIndex = Math.max(cards.findIndex((item) => item.id === card.id), 0);
   const journeyGroups = [
@@ -1133,7 +1197,6 @@ function Deck({ card, onReturn }: { card: Card; onReturn: () => void }) {
   const activeCard = deckCards[activeIndex];
   const isLastCard = stepIndex === journeyDeck.length - 1;
   const journeyProgress = ((stepIndex + 1) / journeyDeck.length) * 100;
-  const promptParts = splitCardPrompt(activeCard.description);
 
   function finishJourney() {
     if (isEnding) return;
@@ -1262,21 +1325,7 @@ function Deck({ card, onReturn }: { card: Card; onReturn: () => void }) {
         aria-busy={isTransitioning}
       >
         <div className="deck-card-slot">
-          <article className="deck-reading-card" key={cardMotion} style={deckCardStyle(activeCard, activeGroup)}>
-            <div className="deck-reading-inner">
-              <div className="card-kicker">
-                <span>{activeCard.index}</span>
-                <span>{activeCard.subtitle}</span>
-              </div>
-              <CardArtwork card={activeCard} />
-              <div className="deck-card-prompt">
-                <ProgressiveCardPrompt parts={promptParts} />
-              </div>
-              <div className="active-card-copy">
-                <h1>{activeCard.name}</h1>
-              </div>
-            </div>
-          </article>
+          <DeckReadingCard key={cardMotion} card={activeCard} group={activeGroup} />
         </div>
 
         <aside className="deck-actions">
