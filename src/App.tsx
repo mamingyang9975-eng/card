@@ -1104,6 +1104,9 @@ function DeckReadingCard({ card, group }: { card: Card; group: Card }) {
   const [isBackVisible, setIsBackVisible] = useState(() => (
     !usesPortraitFlip
   ));
+  const [isFlipHintVisible, setIsFlipHintVisible] = useState(usesPortraitFlip);
+  const autoFlipTimerRef = useRef<number | null>(null);
+  const flipHintTimerRef = useRef<number | null>(null);
   const promptParts = splitCardPrompt(card.description);
 
   useEffect(() => {
@@ -1111,21 +1114,58 @@ function DeckReadingCard({ card, group }: { card: Card; group: Card }) {
 
     if (!isPortraitLayout) {
       setIsBackVisible(true);
+      setIsFlipHintVisible(false);
       return undefined;
     }
 
     setIsBackVisible(false);
+    setIsFlipHintVisible(true);
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const flipTimer = window.setTimeout(() => setIsBackVisible(true), reduceMotion ? 650 : 1250);
+    autoFlipTimerRef.current = window.setTimeout(
+      () => setIsBackVisible(true),
+      reduceMotion ? 650 : 1250,
+    );
+    flipHintTimerRef.current = window.setTimeout(() => setIsFlipHintVisible(false), 2000);
 
-    return () => window.clearTimeout(flipTimer);
+    return () => {
+      if (autoFlipTimerRef.current !== null) {
+        window.clearTimeout(autoFlipTimerRef.current);
+      }
+      if (flipHintTimerRef.current !== null) {
+        window.clearTimeout(flipHintTimerRef.current);
+      }
+    };
   }, [card.id]);
+
+  function toggleCardFace() {
+    if (!usesPortraitFlip) return;
+
+    if (autoFlipTimerRef.current !== null) {
+      window.clearTimeout(autoFlipTimerRef.current);
+      autoFlipTimerRef.current = null;
+    }
+    if (flipHintTimerRef.current !== null) {
+      window.clearTimeout(flipHintTimerRef.current);
+      flipHintTimerRef.current = null;
+    }
+
+    setIsBackVisible((value) => !value);
+    setIsFlipHintVisible(false);
+  }
 
   return (
     <article
       className={`deck-reading-card ${isBackVisible ? 'is-back-visible' : 'is-front-visible'}`}
       style={deckCardStyle(card, group)}
-      aria-label={`${card.name}卡牌`}
+      role={usesPortraitFlip ? 'button' : undefined}
+      tabIndex={usesPortraitFlip ? 0 : undefined}
+      aria-label={usesPortraitFlip ? `点击翻到${isBackVisible ? '正面' : '背面'}：${card.name}` : `${card.name}卡牌`}
+      onClick={toggleCardFace}
+      onKeyDown={(event) => {
+        if (!usesPortraitFlip || (event.key !== 'Enter' && event.key !== ' ')) return;
+        event.preventDefault();
+        toggleCardFace();
+      }}
     >
       <div className="deck-card-flipper">
         <div
@@ -1159,6 +1199,9 @@ function DeckReadingCard({ card, group }: { card: Card; group: Card }) {
           </div>
         </div>
       </div>
+      {isFlipHintVisible && (
+        <span className="deck-flip-hint" aria-hidden="true">点击翻转</span>
+      )}
     </article>
   );
 }
