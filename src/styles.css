@@ -1932,6 +1932,11 @@ a.contact-value:hover {
 }
 
 @media (min-width: 721px) {
+  .deck-exchange-button {
+    flex-shrink: 0;
+    margin-bottom: 14px;
+  }
+
   .deck-layout-showcase .deck-actions,
   .deck-layout-moving .deck-actions {
     visibility: hidden;
