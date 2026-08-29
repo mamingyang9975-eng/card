@@ -434,6 +434,103 @@ a.contact-value:hover {
   text-underline-offset: 3px;
 }
 
+.music-control {
+  position: fixed;
+  left: max(18px, env(safe-area-inset-left));
+  bottom: max(18px, env(safe-area-inset-bottom));
+  z-index: 200;
+}
+
+.music-control audio {
+  display: none;
+}
+
+.music-toggle {
+  position: relative;
+  display: grid;
+  width: 48px;
+  height: 48px;
+  place-items: center;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.38);
+  border-radius: 50%;
+  background: rgba(20, 21, 19, 0.86);
+  box-shadow:
+    0 10px 30px rgba(20, 21, 19, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14);
+  color: #fff;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    background-color 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease;
+}
+
+.music-toggle:hover {
+  background: rgba(20, 21, 19, 0.96);
+  box-shadow:
+    0 12px 34px rgba(20, 21, 19, 0.26),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  transform: translateY(-1px);
+}
+
+.music-toggle:active {
+  transform: scale(0.94);
+}
+
+.music-toggle:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 3px;
+}
+
+.music-equalizer {
+  position: relative;
+  display: flex;
+  width: 19px;
+  height: 19px;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+}
+
+.music-equalizer > span {
+  width: 2px;
+  height: 12px;
+  border-radius: 999px;
+  background: currentColor;
+  transform: scaleY(0.38);
+  transform-origin: center;
+}
+
+.music-toggle.is-playing .music-equalizer > span {
+  animation: musicBar 820ms ease-in-out infinite alternate;
+}
+
+.music-toggle.is-playing .music-equalizer > span:nth-child(2) {
+  animation-delay: -540ms;
+}
+
+.music-toggle.is-playing .music-equalizer > span:nth-child(3) {
+  animation-delay: -270ms;
+}
+
+.music-toggle.is-paused .music-equalizer::after {
+  position: absolute;
+  width: 23px;
+  height: 1.5px;
+  border-radius: 999px;
+  background: currentColor;
+  content: '';
+  transform: rotate(-45deg);
+}
+
+@keyframes musicBar {
+  from { transform: scaleY(0.3); }
+  to { transform: scaleY(1); }
+}
+
 .selection-intro {
   display: flex;
   align-items: flex-end;
@@ -1413,6 +1510,7 @@ a.contact-value:hover {
   flex: 1;
   min-height: 0;
   padding: clamp(28px, 4.5vh, 50px) 0 clamp(18px, 3vh, 32px);
+  perspective: 1400px;
 }
 
 .deck-card-slot {
@@ -1420,16 +1518,32 @@ a.contact-value:hover {
   top: 50%;
   left: 50%;
   width: min(390px, calc((100svh - 190px) * 0.68));
+  opacity: 1;
+  filter: blur(0);
   transform: translate(-50%, -50%);
   transition:
-    left 900ms cubic-bezier(0.22, 1, 0.36, 1),
-    width 900ms cubic-bezier(0.22, 1, 0.36, 1);
-  will-change: left, width;
+    left 980ms cubic-bezier(0.22, 1, 0.36, 1),
+    width 980ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 460ms ease,
+    filter 460ms ease,
+    transform 460ms cubic-bezier(0.22, 1, 0.36, 1);
+  transform-style: preserve-3d;
+  will-change: left, width, opacity, filter, transform;
 }
 
-:is(.deck-layout-moving, .deck-layout-focused) .deck-card-slot {
+:is(.deck-layout-moving, .deck-layout-focused, .deck-layout-exiting) .deck-card-slot {
   left: 16%;
   width: min(235px, calc((100svh - 220px) * 0.43));
+}
+
+.deck-layout-showcase .deck-card-slot {
+  transition: none;
+}
+
+.deck-layout-exiting .deck-card-slot {
+  opacity: 0;
+  filter: blur(12px);
+  transform: translate(-50%, -50%) scale(0.94);
 }
 
 .deck-reading-card {
@@ -1444,10 +1558,21 @@ a.contact-value:hover {
   box-shadow:
     0 34px 90px rgba(0, 0, 0, 0.46),
     0 0 70px color-mix(in srgb, var(--card-accent) 18%, transparent);
-  animation:
-    deckCardReveal 560ms cubic-bezier(0.22, 1, 0.36, 1) both,
-    deckCardFloat 5s ease-in-out 560ms infinite;
-  will-change: transform;
+  backface-visibility: hidden;
+  transform-style: preserve-3d;
+  will-change: transform, opacity, filter;
+}
+
+.deck-layout-showcase .deck-reading-card {
+  animation: deckCardApproach 1400ms cubic-bezier(0.16, 0.84, 0.28, 1) both;
+}
+
+.deck-layout-focused .deck-reading-card {
+  animation: deckCardFloat 5s ease-in-out infinite;
+}
+
+.deck-layout-exiting .deck-reading-card {
+  animation: deckCardExit 500ms cubic-bezier(0.4, 0, 1, 1) both;
 }
 
 .deck-reading-card::after {
@@ -1519,6 +1644,31 @@ a.contact-value:hover {
   display: none;
 }
 
+.deck-card-prompt-copy {
+  position: relative;
+  width: 100%;
+}
+
+.deck-card-prompt-measure {
+  visibility: hidden;
+}
+
+.deck-card-prompt-reveal {
+  position: absolute;
+  inset: 0;
+}
+
+.deck-prompt-line {
+  display: block;
+  opacity: 0;
+}
+
+.deck-prompt-line.is-revealed {
+  animation: deckPromptLineIn 720ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(180ms + var(--prompt-line-index) * 520ms);
+  will-change: opacity, clip-path, filter, transform;
+}
+
 .deck-actions {
   position: absolute;
   top: 50%;
@@ -1536,8 +1686,9 @@ a.contact-value:hover {
     left 900ms cubic-bezier(0.22, 1, 0.36, 1),
     width 900ms cubic-bezier(0.22, 1, 0.36, 1),
     opacity 800ms ease,
-    filter 800ms ease;
-  will-change: left, width, opacity, filter;
+    filter 800ms ease,
+    transform 460ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: left, width, opacity, filter, transform;
 }
 
 :is(.deck-layout-moving, .deck-layout-focused) .deck-actions {
@@ -1545,12 +1696,21 @@ a.contact-value:hover {
   width: min(52vw, 560px);
 }
 
+.deck-layout-exiting .deck-actions {
+  opacity: 0;
+  filter: blur(12px);
+  transform: translate(-50%, -50%) translateY(9px);
+  pointer-events: none;
+  transition-duration: 460ms;
+}
+
 .deck-guidance .eyebrow {
   margin-bottom: 16px;
   color: color-mix(in srgb, var(--card-accent) 72%, white);
 }
 
-.deck-guidance h2 {
+.deck-guidance h2,
+.deck-guidance-copy {
   margin: 0 0 18px;
   font-family: Georgia, "Songti SC", serif;
   font-size: clamp(34px, 3.5vw, 52px);
@@ -1559,15 +1719,26 @@ a.contact-value:hover {
   line-height: 1.08;
 }
 
-.deck-guidance .deck-prompt {
+.deck-guidance .deck-prompt,
+.deck-guidance-copy {
   max-width: 100%;
   font-size: clamp(12.5px, 1.175vw, 17px);
   letter-spacing: -0.035em;
   line-height: 1.5;
 }
 
-:is(.deck-layout-moving, .deck-layout-focused) .deck-guidance .deck-prompt {
+:is(.deck-layout-moving, .deck-layout-focused) .deck-guidance .deck-prompt,
+:is(.deck-layout-moving, .deck-layout-focused) .deck-guidance-copy {
   font-size: clamp(15px, 1.45vw, 22px);
+}
+
+.deck-guidance-copy p {
+  max-width: none;
+  margin: 0;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  line-height: inherit;
 }
 
 .deck-guidance p {
@@ -1615,24 +1786,24 @@ a.contact-value:hover {
 }
 
 .deck-progress {
-  display: flex;
+  position: relative;
   width: 100%;
-  gap: 7px;
+  height: 3px;
+  overflow: hidden;
   margin-top: auto;
   margin-bottom: 18px;
-}
-
-.deck-progress span {
-  width: 21px;
-  height: 2px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.15);
-  transition: width 240ms ease, background 240ms ease;
 }
 
-.deck-progress span.is-current {
-  width: 42px;
+.deck-progress-fill {
+  display: block;
+  width: var(--deck-progress);
+  height: 100%;
+  border-radius: 999px;
   background: color-mix(in srgb, var(--card-accent) 80%, white);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--card-accent) 45%, transparent);
+  transition: width 520ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .deck-forward-actions {
@@ -1908,9 +2079,31 @@ a.contact-value:hover {
   }
 }
 
-@keyframes deckCardReveal {
-  from { opacity: 0; transform: translateY(24px) scale(0.975) rotate(-0.8deg); }
-  to { opacity: 1; transform: translateY(0) scale(1) rotate(0); }
+@keyframes deckCardApproach {
+  0% {
+    opacity: 0;
+    filter: blur(12px);
+    transform: translate3d(0, 0, -980px) scale(0.08) rotateY(-720deg) rotateZ(-24deg);
+  }
+  18% { opacity: 0.88; }
+  68% {
+    opacity: 1;
+    filter: blur(0);
+    transform: translate3d(0, 0, 80px) scale(1.12) rotateY(-52deg) rotateZ(4deg);
+  }
+  84% {
+    transform: translate3d(0, 0, 24px) scale(1.035) rotateY(14deg) rotateZ(-1.2deg);
+  }
+  100% {
+    opacity: 1;
+    filter: blur(0);
+    transform: translate3d(0, 0, 0) scale(1) rotateY(0deg) rotateZ(0deg);
+  }
+}
+
+@keyframes deckCardExit {
+  from { opacity: 1; filter: blur(0); transform: translate3d(0, 0, 0) scale(1); }
+  to { opacity: 0; filter: blur(10px); transform: translate3d(-10px, 0, -80px) scale(0.94); }
 }
 
 @keyframes deckCardFloat {
@@ -1921,11 +2114,13 @@ a.contact-value:hover {
 @keyframes deckPromptLineIn {
   from {
     opacity: 0;
-    filter: blur(5px);
-    transform: translateY(7px);
+    clip-path: inset(0 100% 0 0);
+    filter: blur(2px);
+    transform: translateY(5px);
   }
   to {
     opacity: 1;
+    clip-path: inset(0 0 0 0);
     filter: blur(0);
     transform: translateY(0);
   }
@@ -2006,7 +2201,7 @@ a.contact-value:hover {
     width: min(350px, calc((100svh - 190px) * 0.68));
   }
 
-  :is(.deck-layout-moving, .deck-layout-focused) .deck-card-slot {
+  :is(.deck-layout-moving, .deck-layout-focused, .deck-layout-exiting) .deck-card-slot {
     left: 15%;
     width: min(210px, calc((100svh - 220px) * 0.43));
   }
@@ -2384,12 +2579,9 @@ a.contact-value:hover {
     inset: 0;
   }
 
-  .deck-prompt-line {
-    display: block;
-    opacity: 0;
-    animation: deckPromptLineIn 1040ms cubic-bezier(0.22, 1, 0.36, 1) both;
-    animation-delay: calc(260ms + var(--prompt-line-index) * 840ms);
-    will-change: opacity, filter, transform;
+  .deck-prompt-line.is-revealed {
+    animation-duration: 620ms;
+    animation-delay: calc(220ms + var(--prompt-line-index) * 440ms);
   }
 
   .deck-card-prompt-lead,

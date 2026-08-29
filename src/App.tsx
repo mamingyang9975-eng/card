@@ -37,7 +37,7 @@ type CardSpreadTransform = {
 type SpreadPhase = 'idle' | 'measuring' | 'ready' | 'spreading';
 type HoldPhase = 'idle' | 'holding' | 'gathering';
 type LandingExitPhase = 'idle' | 'fading' | 'lifting' | 'moving';
-type DeckLayoutPhase = 'showcase' | 'moving' | 'focused';
+type DeckLayoutPhase = 'showcase' | 'moving' | 'focused' | 'exiting';
 
 type LandingExitTransform = {
   x: number;
@@ -451,7 +451,13 @@ function measureVisualLines(element: HTMLElement) {
   return lines.filter(Boolean);
 }
 
-function ProgressiveCardPrompt({ parts }: { parts: string[] }) {
+function ProgressiveCardPrompt({
+  parts,
+  revealed = true,
+}: {
+  parts: string[];
+  revealed?: boolean;
+}) {
   const measureRef = useRef<HTMLDivElement>(null);
   const [visualLines, setVisualLines] = useState<string[][] | null>(null);
   const promptKey = parts.join('\u0000');
@@ -508,7 +514,7 @@ function ProgressiveCardPrompt({ parts }: { parts: string[] }) {
                 return (
                   <span
                     key={`${currentLineIndex}-${line}`}
-                    className="deck-prompt-line"
+                    className={`deck-prompt-line ${revealed ? 'is-revealed' : ''}`}
                     style={{ '--prompt-line-index': currentLineIndex } as CSSProperties}
                   >
                     {line}
@@ -592,6 +598,7 @@ function deckCardStyle(card: Card, deckTheme: Card) {
 }
 
 const artworkAnimationEpoch = typeof performance === 'undefined' ? 0 : performance.now();
+const backgroundMusicUrl = new URL('../Soft Morning Light.mp3', import.meta.url).href;
 
 function CardArtwork({ card }: { card: Card }) {
   const [animationDelay] = useState(() => {
@@ -676,6 +683,104 @@ function ContactControl() {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function MusicControl() {
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const userPausedRef = useRef(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [autoplayBlocked, setAutoplayBlocked] = useState(false);
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return undefined;
+
+    audio.volume = 0.42;
+
+    const syncPlayingState = () => setIsPlaying(!audio.paused);
+    const handlePause = () => setIsPlaying(false);
+
+    audio.addEventListener('play', syncPlayingState);
+    audio.addEventListener('playing', syncPlayingState);
+    audio.addEventListener('pause', handlePause);
+
+    void audio.play().then(
+      () => setAutoplayBlocked(false),
+      () => setAutoplayBlocked(true),
+    );
+
+    return () => {
+      audio.removeEventListener('play', syncPlayingState);
+      audio.removeEventListener('playing', syncPlayingState);
+      audio.removeEventListener('pause', handlePause);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!autoplayBlocked || isPlaying) return undefined;
+
+    const startOnFirstInteraction = () => {
+      if (userPausedRef.current) return;
+
+      void audioRef.current?.play().then(
+        () => setAutoplayBlocked(false),
+        () => setAutoplayBlocked(true),
+      );
+    };
+
+    document.addEventListener('pointerdown', startOnFirstInteraction, { capture: true, once: true });
+    document.addEventListener('keydown', startOnFirstInteraction, { capture: true, once: true });
+
+    return () => {
+      document.removeEventListener('pointerdown', startOnFirstInteraction, true);
+      document.removeEventListener('keydown', startOnFirstInteraction, true);
+    };
+  }, [autoplayBlocked, isPlaying]);
+
+  function toggleMusic() {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    if (audio.paused) {
+      userPausedRef.current = false;
+      void audio.play().then(
+        () => setAutoplayBlocked(false),
+        () => setAutoplayBlocked(true),
+      );
+      return;
+    }
+
+    userPausedRef.current = true;
+    setAutoplayBlocked(false);
+    audio.pause();
+  }
+
+  return (
+    <div className="music-control">
+      <audio
+        ref={audioRef}
+        src={backgroundMusicUrl}
+        autoPlay
+        loop
+        preload="auto"
+        playsInline
+      />
+      <button
+        className={`music-toggle ${isPlaying ? 'is-playing' : 'is-paused'}`}
+        type="button"
+        aria-label={isPlaying ? '关闭背景音乐' : '播放背景音乐'}
+        aria-pressed={isPlaying}
+        title={isPlaying ? '关闭背景音乐' : '播放背景音乐'}
+        onClick={toggleMusic}
+      >
+        <span className="music-equalizer" aria-hidden="true">
+          <span />
+          <span />
+          <span />
+        </span>
+      </button>
     </div>
   );
 }
@@ -996,7 +1101,17 @@ function JourneyExit({ onComplete }: { onComplete: () => void }) {
 
 function Deck({ card, onReturn }: { card: Card; onReturn: () => void }) {
   const initialGroupIndex = Math.max(cards.findIndex((item) => item.id === card.id), 0);
-  const groupIndex = initialGroupIndex;
+  const journeyGroups = [
+    ...cards.slice(initialGroupIndex),
+    ...cards.slice(0, initialGroupIndex),
+  ];
+  const journeyDeck = journeyGroups.flatMap((group) =>
+    getDeckCards(group).map((journeyCard, cardIndex) => ({
+      group,
+      card: journeyCard,
+      cardIndex,
+    })),
+  );
   const [activeIndex, setActiveIndex] = useState(0);
   const [stepIndex, setStepIndex] = useState(0);
   const [cardMotion, setCardMotion] = useState(0);
@@ -1008,10 +1123,16 @@ function Deck({ card, onReturn }: { card: Card; onReturn: () => void }) {
 
     return shouldAnimate ? 'showcase' : 'focused';
   });
-  const activeGroup = cards[groupIndex];
+  const [isTransitioning, setIsTransitioning] = useState(() => (
+    window.matchMedia('(min-width: 721px)').matches
+      && !window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  ));
+  const transitionTimers = useRef<number[]>([]);
+  const activeGroup = journeyDeck[stepIndex].group;
   const deckCards = getDeckCards(activeGroup);
   const activeCard = deckCards[activeIndex];
-  const isLastCard = stepIndex === deckCards.length - 1;
+  const isLastCard = stepIndex === journeyDeck.length - 1;
+  const journeyProgress = ((stepIndex + 1) / journeyDeck.length) * 100;
   const promptParts = splitCardPrompt(activeCard.description);
 
   function finishJourney() {
@@ -1019,37 +1140,68 @@ function Deck({ card, onReturn }: { card: Card; onReturn: () => void }) {
     setIsEnding(true);
   }
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     const shouldAnimate = window.matchMedia('(min-width: 721px)').matches
       && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     if (!shouldAnimate) {
       setLayoutPhase('focused');
-      return undefined;
+      setIsTransitioning(false);
+      return;
     }
 
     setLayoutPhase('showcase');
+    setIsTransitioning(true);
 
-    const moveTimer = window.setTimeout(() => setLayoutPhase('moving'), 1000);
-    const focusTimer = window.setTimeout(() => setLayoutPhase('focused'), 2050);
+    const moveTimer = window.setTimeout(() => setLayoutPhase('moving'), 1420);
+    const focusTimer = window.setTimeout(() => {
+      setLayoutPhase('focused');
+      setIsTransitioning(false);
+    }, 2400);
+    transitionTimers.current.push(moveTimer, focusTimer);
 
     return () => {
-      window.clearTimeout(moveTimer);
-      window.clearTimeout(focusTimer);
+      transitionTimers.current.forEach((timer) => window.clearTimeout(timer));
+      transitionTimers.current = [];
     };
-  }, [activeCard.id, cardMotion]);
+  }, []);
 
-  function showCard(nextIndex: number, note: string) {
+  function showCard(nextIndex: number, note: string, nextStepIndex = stepIndex) {
+    if (isTransitioning || isEnding) return;
+
     const shouldAnimate = window.matchMedia('(min-width: 721px)').matches
       && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    if (shouldAnimate) {
-      setLayoutPhase('showcase');
+    if (!shouldAnimate) {
+      setActiveIndex(nextIndex);
+      setStepIndex(nextStepIndex);
+      setCardMotion((value) => value + 1);
+      setActionNote(note);
+      setLayoutPhase('focused');
+      return;
     }
 
-    setActiveIndex(nextIndex);
-    setCardMotion((value) => value + 1);
-    setActionNote(note);
+    setIsTransitioning(true);
+    setActionNote('');
+    setLayoutPhase('exiting');
+
+    const swapTimer = window.setTimeout(() => {
+      setActiveIndex(nextIndex);
+      setStepIndex(nextStepIndex);
+      setCardMotion((value) => value + 1);
+      setActionNote(note);
+      setLayoutPhase('showcase');
+
+      const moveTimer = window.setTimeout(() => setLayoutPhase('moving'), 1420);
+      const focusTimer = window.setTimeout(() => {
+        setLayoutPhase('focused');
+        setIsTransitioning(false);
+      }, 2400);
+
+      transitionTimers.current.push(moveTimer, focusTimer);
+    }, 520);
+
+    transitionTimers.current.push(swapTimer);
   }
 
   function exchangeCard() {
@@ -1064,7 +1216,8 @@ function Deck({ card, onReturn }: { card: Card; onReturn: () => void }) {
   }
 
   function skipCard() {
-    showCard((activeIndex + 1) % deckCards.length, '已跳过，旅程继续');
+    const nextStep = journeyDeck[stepIndex + 1];
+    showCard(nextStep.cardIndex, '已跳过，旅程继续', stepIndex + 1);
   }
 
   function nextCard() {
@@ -1073,8 +1226,8 @@ function Deck({ card, onReturn }: { card: Card; onReturn: () => void }) {
       return;
     }
 
-    setStepIndex((value) => value + 1);
-    showCard((activeIndex + 1) % deckCards.length, '已进入下一张牌');
+    const nextStep = journeyDeck[stepIndex + 1];
+    showCard(nextStep.cardIndex, '已进入下一张牌', stepIndex + 1);
   }
 
   return (
@@ -1097,13 +1250,17 @@ function Deck({ card, onReturn }: { card: Card; onReturn: () => void }) {
         <span className="brand-mark">今日旅程</span>
         <div className="topbar-meta">
           <span className="step-label">
-            {String(stepIndex + 1).padStart(2, '0')} / {String(deckCards.length).padStart(2, '0')}
+            {String(stepIndex + 1).padStart(2, '0')} / {String(journeyDeck.length).padStart(2, '0')}
           </span>
           <ContactControl />
         </div>
       </header>
 
-      <section className="deck-stage" aria-label={`${activeGroup.name}卡组，当前卡牌为${activeCard.name}`}>
+      <section
+        className="deck-stage"
+        aria-label={`${activeGroup.name}卡组，当前卡牌为${activeCard.name}`}
+        aria-busy={isTransitioning}
+      >
         <div className="deck-card-slot">
           <article className="deck-reading-card" key={cardMotion} style={deckCardStyle(activeCard, activeGroup)}>
             <div className="deck-reading-inner">
@@ -1125,25 +1282,54 @@ function Deck({ card, onReturn }: { card: Card; onReturn: () => void }) {
         <aside className="deck-actions">
           <div className="deck-guidance">
             <span className="eyebrow">{activeGroup.name} · CARD DECK</span>
-            <h2 className="deck-prompt">{activeCard.description}</h2>
+            <div className="deck-guidance-copy" aria-label={activeCard.description}>
+              <ProgressiveCardPrompt
+                key={`guidance-${cardMotion}`}
+                parts={[activeCard.description]}
+                revealed={layoutPhase === 'focused'}
+              />
+            </div>
           </div>
 
-          <button className="deck-exchange-button" type="button" onClick={exchangeCard}>
+          <button
+            className="deck-exchange-button"
+            type="button"
+            onClick={exchangeCard}
+            disabled={isTransitioning || isEnding}
+          >
             <span aria-hidden="true">↻</span> 换一张牌
           </button>
 
-          <div className="deck-progress" aria-hidden="true">
-            {deckCards.map((item, index) => (
-              <span key={item.id} className={index === stepIndex ? 'is-current' : ''} />
-            ))}
+          <div
+            className="deck-progress"
+            role="progressbar"
+            aria-label="五组卡牌旅程进度"
+            aria-valuemin={1}
+            aria-valuemax={journeyDeck.length}
+            aria-valuenow={stepIndex + 1}
+          >
+            <span
+              className="deck-progress-fill"
+              style={{ '--deck-progress': `${journeyProgress}%` } as CSSProperties}
+            />
           </div>
 
           <div className="deck-forward-actions">
-            <button className="deck-next-button" type="button" onClick={nextCard}>
+            <button
+              className="deck-next-button"
+              type="button"
+              onClick={nextCard}
+              disabled={isTransitioning || isEnding}
+            >
               {isLastCard ? '结束这次旅程' : '下一步'} <span aria-hidden="true">→</span>
             </button>
             {!isLastCard && (
-              <button className="deck-skip-button" type="button" onClick={skipCard}>
+              <button
+                className="deck-skip-button"
+                type="button"
+                onClick={skipCard}
+                disabled={isTransitioning || isEnding}
+              >
                 跳过这张牌
               </button>
             )}
@@ -1162,7 +1348,7 @@ function Deck({ card, onReturn }: { card: Card; onReturn: () => void }) {
   );
 }
 
-export default function App() {
+function AppContent() {
   const [selectedId, setSelectedId] = useState(cards[0].id);
   const [recommendationTipKey, setRecommendationTipKey] = useState(0);
   const [descriptionMessageCardId, setDescriptionMessageCardId] = useState<string | null>(null);
@@ -1554,5 +1740,14 @@ export default function App() {
         </button>
       </footer>
     </main>
+  );
+}
+
+export default function App() {
+  return (
+    <>
+      <AppContent />
+      <MusicControl />
+    </>
   );
 }
