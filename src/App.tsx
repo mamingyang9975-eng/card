@@ -1105,7 +1105,6 @@ function DeckReadingCard({ card, group }: { card: Card; group: Card }) {
     !usesPortraitFlip
   ));
   const [isFlipHintVisible, setIsFlipHintVisible] = useState(usesPortraitFlip);
-  const autoFlipTimerRef = useRef<number | null>(null);
   const flipHintTimerRef = useRef<number | null>(null);
   const promptParts = splitCardPrompt(card.description);
 
@@ -1120,17 +1119,9 @@ function DeckReadingCard({ card, group }: { card: Card; group: Card }) {
 
     setIsBackVisible(false);
     setIsFlipHintVisible(true);
-    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    autoFlipTimerRef.current = window.setTimeout(
-      () => setIsBackVisible(true),
-      reduceMotion ? 650 : 1250,
-    );
     flipHintTimerRef.current = window.setTimeout(() => setIsFlipHintVisible(false), 2000);
 
     return () => {
-      if (autoFlipTimerRef.current !== null) {
-        window.clearTimeout(autoFlipTimerRef.current);
-      }
       if (flipHintTimerRef.current !== null) {
         window.clearTimeout(flipHintTimerRef.current);
       }
@@ -1140,10 +1131,6 @@ function DeckReadingCard({ card, group }: { card: Card; group: Card }) {
   function toggleCardFace() {
     if (!usesPortraitFlip) return;
 
-    if (autoFlipTimerRef.current !== null) {
-      window.clearTimeout(autoFlipTimerRef.current);
-      autoFlipTimerRef.current = null;
-    }
     if (flipHintTimerRef.current !== null) {
       window.clearTimeout(flipHintTimerRef.current);
       flipHintTimerRef.current = null;
