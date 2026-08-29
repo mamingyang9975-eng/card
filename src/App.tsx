@@ -721,8 +721,9 @@ function MusicControl() {
   useEffect(() => {
     if (!autoplayBlocked || isPlaying) return undefined;
 
-    const startOnFirstInteraction = () => {
+    const startOnFirstInteraction = (event: Event) => {
       if (userPausedRef.current) return;
+      if (event.target instanceof Element && event.target.closest('.music-toggle')) return;
 
       void audioRef.current?.play().then(
         () => setAutoplayBlocked(false),
@@ -730,8 +731,8 @@ function MusicControl() {
       );
     };
 
-    document.addEventListener('pointerdown', startOnFirstInteraction, { capture: true, once: true });
-    document.addEventListener('keydown', startOnFirstInteraction, { capture: true, once: true });
+    document.addEventListener('pointerdown', startOnFirstInteraction, true);
+    document.addEventListener('keydown', startOnFirstInteraction, true);
 
     return () => {
       document.removeEventListener('pointerdown', startOnFirstInteraction, true);

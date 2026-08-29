@@ -2732,7 +2732,8 @@ a.contact-value:hover {
   .deck-ambient-glow,
   .deck-mote,
   .deck-reading-card,
-  .deck-prompt-line {
+  .deck-prompt-line,
+  .music-toggle.is-playing .music-equalizer > span {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
   }
