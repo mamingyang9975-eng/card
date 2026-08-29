@@ -164,6 +164,64 @@ const beginningDeck: Card[] = [
   },
 ];
 
+const insightDeck: Card[] = [
+  {
+    id: 'insight-unfamiliar-touch',
+    index: '01',
+    name: '陌生触碰',
+    subtitle: 'UNFAMILIAR TOUCH',
+    description:
+      '用不常使用的那只手触碰身体。留意这一只手带来的陌生感、笨拙感或新的刺激。',
+    accent: '#8c79dc',
+    soft: '#eeeaff',
+    ink: '#3d2c7a',
+  },
+  {
+    id: 'insight-full-attention',
+    index: '02',
+    name: '充分关注',
+    subtitle: 'FULL ATTENTION',
+    description:
+      '想象自己同时被来自不同方向的目光、声音或触碰包围，观察身体对“被充分关注”的感觉有没有回应。',
+    accent: '#8c79dc',
+    soft: '#eeeaff',
+    ink: '#3d2c7a',
+  },
+  {
+    id: 'insight-close-distance',
+    index: '03',
+    name: '亲密距离',
+    subtitle: 'CLOSE DISTANCE',
+    description:
+      '想象一个狭小但安全的空间，身体与另一个存在靠得很近。注意空间带来的急迫感、包裹感或限制感。你希望距离更近还是更远？',
+    accent: '#8c79dc',
+    soft: '#eeeaff',
+    ink: '#3d2c7a',
+  },
+  {
+    id: 'insight-lingering-traces',
+    index: '04',
+    name: '轨迹停留',
+    subtitle: 'LINGERING TRACES',
+    description:
+      '用指尖在皮肤上画三个圆，再画三条短线。可以选择胸口、腹部、大腿或私密部位。哪种轨迹让感觉停留得更久？',
+    accent: '#8c79dc',
+    soft: '#eeeaff',
+    ink: '#3d2c7a',
+  },
+  {
+    id: 'insight-secret-scene',
+    index: '05',
+    name: '秘密场景',
+    subtitle: 'SECRET SCENE',
+    description:
+      '想象一个你一直有所好奇的亲密场景。想象里完全安全、不会被发现，也不会影响任何人。吸引你的更像是地点、秘密感，还是脱离日常的感觉？',
+    accent: '#8c79dc',
+    soft: '#eeeaff',
+    ink: '#3d2c7a',
+  },
+];
+
 const courageDeck: Card[] = [
   {
     id: 'courage-adventure',
@@ -335,7 +393,7 @@ function createPlaceholderDeck(deck: Card): Card[] {
 
 const deckCardsById: Record<string, Card[]> = {
   begin: beginningDeck,
-  insight: createPlaceholderDeck(cards[1]),
+  insight: insightDeck,
   courage: courageDeck,
   balance: balanceDeck,
   'new-moon': newMoonDeck,
