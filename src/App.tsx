@@ -5,6 +5,7 @@ import {
   useState,
   type CSSProperties,
   type PointerEvent as ReactPointerEvent,
+  type TransitionEvent as ReactTransitionEvent,
 } from 'react';
 
 type Card = {
@@ -486,9 +487,20 @@ function deckCardStyle(card: Card, deckTheme: Card) {
   } as CSSProperties;
 }
 
+const artworkAnimationEpoch = typeof performance === 'undefined' ? 0 : performance.now();
+
 function CardArtwork({ card }: { card: Card }) {
+  const [animationDelay] = useState(() => {
+    if (typeof performance === 'undefined') return 0;
+    return -(performance.now() - artworkAnimationEpoch);
+  });
+
   return (
-    <div className="card-art" aria-hidden="true">
+    <div
+      className="card-art"
+      style={{ '--art-animation-delay': `${animationDelay}ms` } as CSSProperties}
+      aria-hidden="true"
+    >
       <span className="orbit-layer orbit-layer-large">
         <span className="orbit" />
         <span className="spark spark-one" />
@@ -587,6 +599,7 @@ function LandingDeck({
   const gatherTimer = useRef<number | null>(null);
   const exitTimers = useRef<number[]>([]);
   const longPressTriggered = useRef(false);
+  const continueTransitionFinished = useRef(false);
 
   function clearPressTimer() {
     if (pressTimer.current !== null) {
@@ -658,6 +671,7 @@ function LandingDeck({
 
     clearPressTimer();
     clearGatherTimer();
+    continueTransitionFinished.current = false;
 
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const sourceBounds = frontCardRef.current?.getBoundingClientRect();
@@ -677,7 +691,26 @@ function LandingDeck({
 
     queueExitStep(() => setExitPhase('lifting'), 260);
     queueExitStep(() => setExitPhase('moving'), 500);
-    queueExitStep(onContinue, 1340);
+    queueExitStep(finishContinueTransition, 1600);
+  }
+
+  function finishContinueTransition() {
+    if (continueTransitionFinished.current) return;
+
+    continueTransitionFinished.current = true;
+    clearExitTimers();
+    onContinue();
+  }
+
+  function finishContinueAfterCardMovement(event: ReactTransitionEvent<HTMLElement>) {
+    if (
+      exitPhase === 'moving' &&
+      event.target === event.currentTarget &&
+      event.propertyName === 'transform' &&
+      event.elapsedTime >= 0.75
+    ) {
+      finishContinueTransition();
+    }
   }
 
   function continueJourney() {
@@ -734,6 +767,7 @@ function LandingDeck({
             ref={frontCardRef}
             className="active-card landing-front-card"
             style={cardStyle(card)}
+            onTransitionEnd={finishContinueAfterCardMovement}
             aria-hidden="true"
           >
             <div className="active-card-inner landing-front-inner">

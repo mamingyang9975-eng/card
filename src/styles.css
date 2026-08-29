@@ -759,23 +759,29 @@ a.contact-value:hover {
 .spark-two { top: 42%; right: -1px; }
 .spark-three { bottom: -1px; left: 43%; }
 
+.landing-front-card .orbit-layer-large,
 .select-page .choice-card.is-selected .orbit-layer-large,
 .use-page .orbit-layer-large {
   animation: orbitClockwise 18s linear infinite;
+  animation-delay: var(--art-animation-delay, 0ms);
   will-change: transform;
 }
 
+.landing-front-card .orbit-layer-small,
 .select-page .choice-card.is-selected .orbit-layer-small,
 .use-page .orbit-layer-small {
   animation: orbitCounterclockwise 11s linear infinite;
+  animation-delay: var(--art-animation-delay, 0ms);
   will-change: transform;
 }
 
+.landing-front-card .art-core::after,
 .select-page .choice-card.is-selected .art-core::after,
 .use-page .art-core::after {
   border-top-color: rgba(255, 255, 255, 0.24);
   border-bottom-color: rgba(255, 255, 255, 0.82);
   animation: coreRingClockwise 7s linear infinite;
+  animation-delay: var(--art-animation-delay, 0ms);
   will-change: transform;
 }
 
@@ -2480,6 +2486,8 @@ a.contact-value:hover {
   .journey-lights .journey-words,
   .landing-card-stack,
   .landing-hint,
+  .landing-front-card .orbit-layer,
+  .landing-front-card .art-core::after,
   .use-page.is-landing-arrival .use-topbar,
   .use-page.is-landing-arrival .use-copy,
   .select-page .choice-card.is-selected .orbit-layer,
