@@ -410,12 +410,21 @@ function splitCardPrompt(text: string) {
   const sentenceParts = text.match(/[^。！？]+[。！？]?/gu)?.map((part) => part.trim()).filter(Boolean) ?? [];
   if (sentenceParts.length > 1) return sentenceParts;
 
-  const commaIndex = text.indexOf('，');
-  if (commaIndex > 0) {
-    return [text.slice(0, commaIndex + 1), text.slice(commaIndex + 1)].map((part) => part.trim());
-  }
-
   return [text];
+}
+
+function renderCardPromptText(text: string) {
+  return text.split(/(松开一处|缓慢呼吸三次)/gu).map((part, index) => {
+    if (part === '松开一处' || part === '缓慢呼吸三次') {
+      return (
+        <span className="deck-card-phrase" key={`${part}-${index}`}>
+          {part}
+        </span>
+      );
+    }
+
+    return part;
+  });
 }
 
 const particles = Array.from({ length: 84 }, (_, index) => {
@@ -975,10 +984,10 @@ function Deck({ card, onReturn }: { card: Card; onReturn: () => void }) {
               </div>
               <CardArtwork card={activeCard} />
               <div className="deck-card-prompt">
-                <p className="deck-card-prompt-lead">{promptParts[0]}</p>
+                <p className="deck-card-prompt-lead">{renderCardPromptText(promptParts[0])}</p>
                 {promptParts.slice(1).map((part, index) => (
                   <p key={`${activeCard.id}-prompt-${index}`} className="deck-card-prompt-detail">
-                    {part}
+                    {renderCardPromptText(part)}
                   </p>
                 ))}
               </div>
